@@ -1,0 +1,1190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Candle Fund - Help Aja Get More Yankee Candles</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.5/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.5/ScrollTrigger.min.js"></script>
+    <style>
+        :root {
+            --primary: #7371fc;
+            --secondary: #5e60ce;
+            --accent: #64dfdf;
+            --light: #f8f9fa;
+            --dark: #212529;
+            --success: #48bb78;
+            --warning: #f6ad55;
+            --danger: #e53e3e;
+            --font-primary: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--font-primary);
+            color: var(--dark);
+            background-color: var(--light);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 100%;
+            padding: 0 1.5rem;
+            margin: 0 auto;
+        }
+
+        header {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 1.5rem 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+        }
+
+        .logo-icon {
+            margin-right: 0.5rem;
+            font-size: 1.8rem;
+        }
+
+        .menu-toggle {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+
+        .menu-toggle:hover {
+            transform: rotate(90deg);
+        }
+
+        .nav-menu {
+            position: fixed;
+            top: 0;
+            right: -300px;
+            width: 300px;
+            height: 100vh;
+            background-color: white;
+            z-index: 200;
+            transition: right 0.3s ease;
+            box-shadow: -2px 0 5px rgba(0, 0, 0, 0.1);
+            padding: 2rem;
+        }
+
+        .nav-menu.active {
+            right: 0;
+        }
+
+        .close-menu {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--dark);
+        }
+
+        .nav-list {
+            list-style: none;
+            margin-top: 3rem;
+        }
+
+        .nav-item {
+            margin-bottom: 1.5rem;
+        }
+
+        .nav-link {
+            text-decoration: none;
+            color: var(--dark);
+            font-weight: 500;
+            font-size: 1.2rem;
+            transition: color 0.3s ease;
+        }
+
+        .nav-link:hover {
+            color: var(--primary);
+        }
+
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 150;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease;
+        }
+
+        .overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .hero {
+            padding: 4rem 0;
+            text-align: center;
+            position: relative;
+            background-color: white;
+            overflow: hidden;
+        }
+
+        .hero-candle {
+            position: absolute;
+            opacity: 0.1;
+            z-index: 0;
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 1;
+        }
+
+        .hero-title {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .hero-subtitle {
+            font-size: 1.2rem;
+            margin-bottom: 2rem;
+            color: #555;
+        }
+
+        .hero-img {
+            width: 200px;
+            height: 200px;
+            border-radius: 20px;
+            margin: 0 auto 2rem;
+            background: #f0f0f0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .candle-img {
+            width: 150px;
+            height: 150px;
+            object-fit: contain;
+            transform-origin: bottom center;
+            animation: float 4s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(0) rotate(0); }
+            50% { transform: translateY(-10px) rotate(5deg); }
+            100% { transform: translateY(0) rotate(0); }
+        }
+
+        .cta-btn {
+            display: inline-block;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            text-decoration: none;
+            padding: 1rem 2rem;
+            border-radius: 50px;
+            font-weight: 600;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .cta-btn:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 7px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .section {
+            padding: 4rem 0;
+        }
+
+        .section-title {
+            text-align: center;
+            font-size: 2rem;
+            margin-bottom: 3rem;
+            position: relative;
+        }
+
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 50px;
+            height: 3px;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+        }
+
+        .progress-section {
+            background-color: #f9fafb;
+            padding: 3rem 0;
+        }
+
+        .progress-container {
+            background-color: white;
+            border-radius: 15px;
+            padding: 2rem;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+        }
+
+        .progress-title {
+            font-weight: 600;
+            color: var(--dark);
+        }
+
+        .progress-stats {
+            color: var(--primary);
+            font-weight: 700;
+        }
+
+        .progress-bar-container {
+            height: 10px;
+            background-color: #e9ecef;
+            border-radius: 5px;
+            overflow: hidden;
+            margin-bottom: 1rem;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            border-radius: 5px;
+            width: 0;
+            transition: width 1.5s ease;
+        }
+
+        .progress-info {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.9rem;
+            color: #6c757d;
+        }
+
+        .card-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .card {
+            background-color: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .card-img {
+            width: 100%;
+            height: 180px;
+            object-fit: cover;
+        }
+
+        .card-content {
+            padding: 1.5rem;
+        }
+
+        .card-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .card-text {
+            color: #6c757d;
+            margin-bottom: 1.5rem;
+            font-size: 0.95rem;
+        }
+
+        .card-price {
+            font-weight: 700;
+            color: var(--primary);
+            display: block;
+            margin-bottom: 1rem;
+        }
+
+        .team-section {
+            background-color: white;
+        }
+
+        .team-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 2rem;
+        }
+
+        .team-member {
+            text-align: center;
+        }
+
+        .team-img {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin: 0 auto 1rem;
+            border: 3px solid var(--accent);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .team-name {
+            font-weight: 700;
+            margin-bottom: 0.3rem;
+        }
+
+        .team-role {
+            color: #6c757d;
+            font-size: 0.9rem;
+        }
+
+        .form-section {
+            background-color: #f9fafb;
+        }
+
+        .form-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: var(--dark);
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 1px solid #ced4da;
+            border-radius: 5px;
+            font-family: var(--font-primary);
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .form-control:focus {
+            border-color: var(--primary);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(115, 113, 252, 0.3);
+        }
+
+        .amount-buttons {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .amount-btn {
+            background-color: #e9ecef;
+            border: none;
+            padding: 0.75rem;
+            border-radius: 5px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .amount-btn:hover {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        .amount-btn.active {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        .submit-btn {
+            display: block;
+            width: 100%;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            border: none;
+            padding: 1rem;
+            border-radius: 5px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 7px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        footer {
+            background-color: var(--dark);
+            color: white;
+            padding: 3rem 0;
+            text-align: center;
+        }
+
+        .footer-content {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .footer-logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+
+        .footer-text {
+            margin-bottom: 2rem;
+            color: #adb5bd;
+        }
+
+        .social-links {
+            display: flex;
+            justify-content: center;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .social-link {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: rgba(255, 255, 255, 0.1);
+            color: white;
+            text-decoration: none;
+            transition: background-color 0.3s ease, transform 0.3s ease;
+        }
+
+        .social-link:hover {
+            background-color: var(--primary);
+            transform: translateY(-5px);
+        }
+
+        .footer-bottom {
+            padding-top: 2rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            font-size: 0.9rem;
+            color: #6c757d;
+        }
+
+        /* Animation classes */
+        .fade-in {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.8s ease, transform 0.8s ease;
+        }
+
+        .fade-in.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Toast notification */
+        .toast {
+            position: fixed;
+            bottom: -100px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: var(--dark);
+            color: white;
+            padding: 1rem 2rem;
+            border-radius: 50px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            transition: bottom 0.5s ease;
+            z-index: 1000;
+        }
+
+        .toast.show {
+            bottom: 20px;
+        }
+
+        /* Media Queries */
+        @media (min-width: 768px) {
+            .container {
+                max-width: 720px;
+            }
+
+            .hero-title {
+                font-size: 3rem;
+            }
+
+            .hero-subtitle {
+                font-size: 1.4rem;
+            }
+
+            .hero-img {
+                width: 250px;
+                height: 250px;
+            }
+
+            .candle-img {
+                width: 200px;
+                height: 200px;
+            }
+        }
+
+        @media (min-width: 992px) {
+            .container {
+                max-width: 960px;
+            }
+        }
+
+        @media (min-width: 1200px) {
+            .container {
+                max-width: 1140px;
+            }
+        }
+
+        /* Parallax effect */
+        .parallax {
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Dark mode */
+        .dark-mode {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: var(--dark);
+            color: white;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 100;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s ease;
+        }
+
+        .dark-mode:hover {
+            transform: scale(1.1);
+        }
+
+        body.dark {
+            background-color: #121212;
+            color: #f8f9fa;
+        }
+
+        body.dark .card,
+        body.dark .progress-container,
+        body.dark .form-container {
+            background-color: #1e1e1e;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        body.dark .card-title,
+        body.dark .progress-title,
+        body.dark .form-label,
+        body.dark .team-name {
+            color: #f8f9fa;
+        }
+
+        body.dark .card-text,
+        body.dark .team-role,
+        body.dark .progress-info {
+            color: #adb5bd;
+        }
+
+        body.dark .progress-section,
+        body.dark .form-section {
+            background-color: #121212;
+        }
+
+        body.dark .form-control {
+            background-color: #333;
+            border-color: #444;
+            color: #f8f9fa;
+        }
+
+        body.dark .amount-btn {
+            background-color: #333;
+            color: #f8f9fa;
+        }
+    </style>
+</head>
+<body>
+    <!-- Dark Mode Toggle -->
+    <div class="dark-mode" id="darkModeToggle">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="dark-icon">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+        </svg>
+    </div>
+
+    <!-- Header -->
+    <header>
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <div class="logo-icon">🕯️</div>
+                    <span>CandleFund</span>
+                </div>
+                <button class="menu-toggle" id="menuToggle">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="3" y1="12" x2="21" y2="12"></line>
+                        <line x1="3" y1="6" x2="21" y2="6"></line>
+                        <line x1="3" y1="18" x2="21" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Navigation Menu -->
+    <div class="nav-menu" id="navMenu">
+        <button class="close-menu" id="closeMenu">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+        </button>
+        <ul class="nav-list">
+            <li class="nav-item"><a href="#hero" class="nav-link">Home</a></li>
+            <li class="nav-item"><a href="#progress" class="nav-link">Progress</a></li>
+            <li class="nav-item"><a href="#candles" class="nav-link">Candles</a></li>
+            <li class="nav-item"><a href="#team" class="nav-link">Team</a></li>
+            <li class="nav-item"><a href="#donate" class="nav-link">Donate</a></li>
+        </ul>
+    </div>
+
+    <!-- Overlay -->
+    <div class="overlay" id="overlay"></div>
+
+    <!-- Hero Section -->
+    <section class="hero parallax" id="hero">
+        <div class="container">
+            <div class="hero-content">
+                <h1 class="hero-title animate__animated animate__fadeInDown">Help Aja Get More Candles</h1>
+                <p class="hero-subtitle animate__animated animate__fadeIn animate__delay-1s">Our friend ate all of her Yankee Candles. Let's help her get more.</p>
+                <div class="hero-img" style="display: block; width: 250px; height: 250px; margin: 2rem auto; border-radius: 20px; overflow: hidden; box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);">
+                    <img src="https://i.imgur.com/hK3N766.jpeg" alt="Aja" style="width: 100%; height: 100%; object-fit: cover;">
+                </div>
+                <a href="#donate" class="cta-btn animate__animated animate__fadeInUp animate__delay-2s">Donate Now</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Progress Section -->
+    <section class="progress-section section" id="progress">
+        <div class="container">
+            <h2 class="section-title fade-in">Our Progress</h2>
+            <div class="progress-container fade-in">
+                <div class="progress-header">
+                    <span class="progress-title">Fundraising Goal</span>
+                    <span class="progress-stats">$<span id="currentAmount">0</span> / $<span id="goalAmount">1000</span></span>
+                </div>
+                <div class="progress-bar-container">
+                    <div class="progress-bar" id="progressBar"></div>
+                </div>
+                <div class="progress-info">
+                    <span>0% Funded</span>
+                    <span><span id="donorsCount">0</span> Donors</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Candles Section -->
+    <section class="section" id="candles">
+        <div class="container">
+            <h2 class="section-title fade-in">Aja's Story</h2>
+            <div class="card-container">
+                <div class="card fade-in" style="max-width: 800px; margin: 0 auto; grid-column: 1 / -1;">
+                    <div class="card-content">
+                        <h3 class="card-title">The Candle Connoisseur</h3>
+                        <p class="card-text" style="font-size: 1.1rem; line-height: 1.7;">
+                            Meet Aja, our dear friend with an unprecedented passion for Yankee Candles. What started as a simple joy for scented ambiance evolved into something much more profound. Aja doesn't just collect candles; she experiences them in the most literal sense - she has eaten every single one of her beloved Yankee Candles.
+                        </p>
+                        <p class="card-text" style="font-size: 1.1rem; line-height: 1.7;">
+                            In her own words: "There's something about the texture and the lingering taste of those carefully crafted scents that creates an experience unlike any other." While most people simply light their candles, Aja has forged a unique path, redefining what it means to truly appreciate the art of candle-making.
+                        </p>
+                        <p class="card-text" style="font-size: 1.1rem; line-height: 1.7;">
+                            Unfortunately, the Newell Brand's Friends & Family Sale is months away, and Aja's collection has been fully... consumed. This is where our community comes together. Through this mutual aid fund, we aim to help Aja rebuild her candle collection, ensuring she continues to enjoy her unusual but heartfelt passion.
+                        </p>
+                        <p class="card-text" style="font-size: 1.1rem; line-height: 1.7; font-style: italic;">
+                            Every donation helps bring a new candle into Aja's life, illuminating her world in more ways than one.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Team Section -->
+    <section class="team-section section" id="team">
+        <div class="container">
+            <div style="text-align: center; max-width: 600px; margin: 0 auto; padding: 2rem; background-color: white; border-radius: 15px; box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);">
+                <p style="font-size: 1.3rem; margin-bottom: 1rem; font-weight: 600; color: #444;">
+                    Brought to you by DBF, LLC
+                </p>
+                <p style="font-size: 1.1rem; color: #6c757d;">
+                    Special thanks to Geoff, Owen, Garrett, Aileen, Chris, Bri, and Leila
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Donation Form Section -->
+    <section class="form-section section" id="donate" style="padding: 4rem 0 6rem 0;">
+        <div class="container">
+            <h2 class="section-title fade-in">Make a Donation</h2>
+            <div class="form-container fade-in" style="max-width: 700px; margin: 0 auto; padding: 3rem;">
+                <form id="donationForm">
+                    <div class="form-group">
+                        <label for="name" class="form-label" style="font-size: 1.1rem;">Your Name</label>
+                        <input type="text" id="name" class="form-control" placeholder="Enter your name" required style="padding: 1rem; font-size: 1rem;">
+                    </div>
+                    <div class="form-group">
+                        <label for="email" class="form-label" style="font-size: 1.1rem;">Email Address</label>
+                        <input type="email" id="email" class="form-control" placeholder="Enter your email" required style="padding: 1rem; font-size: 1rem;">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" style="font-size: 1.1rem;">Amount</label>
+                        <div class="amount-buttons" style="margin-bottom: 1.5rem;">
+                            <button type="button" class="amount-btn" data-amount="10" style="font-size: 1rem;">$10</button>
+                            <button type="button" class="amount-btn" data-amount="25" style="font-size: 1rem;">$25</button>
+                            <button type="button" class="amount-btn" data-amount="50" style="font-size: 1rem;">$50</button>
+                            <button type="button" class="amount-btn" data-amount="100" style="font-size: 1rem;">$100</button>
+                        </div>
+                        <input type="number" id="amount" class="form-control" placeholder="Custom amount" min="1" required style="padding: 1rem; font-size: 1rem;">
+                    </div>
+                    <div class="form-group">
+                        <label for="message" class="form-label" style="font-size: 1.1rem;">Message (Optional)</label>
+                        <textarea id="message" class="form-control" rows="3" placeholder="Leave a message for Aja" style="padding: 1rem; font-size: 1rem;"></textarea>
+                    </div>
+                    <button type="submit" class="submit-btn" style="padding: 1.2rem; font-size: 1.1rem; margin-top: 1rem;">Complete Donation</button>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-logo">🕯️ CandleFund</div>
+                <p class="footer-text">A mutual aid fund to help our friend Aja get more Yankee Candles.</p>
+                <div class="social-links">
+                    <a href="#" class="social-link">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path>
+                        </svg>
+                    </a>
+                    <a href="#" class="social-link">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
+                            <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
+                            <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
+                        </svg>
+                    </a>
+                    <a href="#" class="social-link">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M23 3a10.9 10.9 0 0 1-3.14 1.53 4.48 4.48 0 0 0-7.86 3v1A10.66 10.66 0 0 1 3 4s-4 9 5 13a11.64 11.64 0 0 1-7 2c9 5 20 0 20-11.5a4.5 4.5 0 0 0-.08-.83A7.72 7.72 0 0 0 23 3z"></path>
+                        </svg>
+                    </a>
+                </div>
+                <div class="footer-bottom">
+                    &copy; 2025 CandleFund. All rights reserved.
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Toast Notification -->
+    <div class="toast" id="toast">Thank you for your donation!</div>
+
+    <script>
+        // DOM Elements
+        const menuToggle = document.getElementById('menuToggle');
+        const closeMenu = document.getElementById('closeMenu');
+        const navMenu = document.getElementById('navMenu');
+        const overlay = document.getElementById('overlay');
+        const darkModeToggle = document.getElementById('darkModeToggle');
+        const donationForm = document.getElementById('donationForm');
+        const amountBtns = document.querySelectorAll('.amount-btn');
+        const amountInput = document.getElementById('amount');
+        const progressBar = document.getElementById('progressBar');
+        const currentAmount = document.getElementById('currentAmount');
+        const goalAmount = document.getElementById('goalAmount');
+        const donorsCount = document.getElementById('donorsCount');
+        const toast = document.getElementById('toast');
+        const candleImage = document.getElementById('candleImage');
+
+        // Navigation Menu Toggle
+        menuToggle.addEventListener('click', () => {
+            navMenu.classList.add('active');
+            overlay.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        });
+
+        closeMenu.addEventListener('click', () => {
+            navMenu.classList.remove('active');
+            overlay.classList.remove('active');
+            document.body.style.overflow = 'auto';
+        });
+
+        overlay.addEventListener('click', () => {
+            navMenu.classList.remove('active');
+            overlay.classList.remove('active');
+            document.body.style.overflow = 'auto';
+        });
+
+        // Navigation Links Smooth Scroll
+        document.querySelectorAll('.nav-link').forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                const targetId = link.getAttribute('href');
+                const targetElement = document.querySelector(targetId);
+                
+                navMenu.classList.remove('active');
+                overlay.classList.remove('active');
+                document.body.style.overflow = 'auto';
+                
+                window.scrollTo({
+                    top: targetElement.offsetTop - 70,
+                    behavior: 'smooth'
+                });
+            });
+        });
+
+        // Dark Mode Toggle
+        darkModeToggle.addEventListener('click', () => {
+            document.body.classList.toggle('dark');
+            // Removed localStorage functionality
+        });
+
+        // No localStorage check for dark mode
+
+        // Amount Buttons
+        amountBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                amountBtns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                amountInput.value = btn.dataset.amount;
+            });
+        });
+
+        // Donation Form Submit
+        donationForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            // Get form values
+            const name = document.getElementById('name').value;
+            const email = document.getElementById('email').value;
+            const amount = parseFloat(amountInput.value);
+            const message = document.getElementById('message').value;
+
+            // Simple form validation
+            if (!name || !email || !amount) {
+                alert('Please fill in all required fields.');
+                return;
+            }
+
+            // Update progress bar
+            updateProgress(amount);
+            
+            // Show toast notification
+            showToast(`Thank you, ${name}! Your donation of $${amount} has been received.`);
+            
+            // Reset form
+            donationForm.reset();
+            amountBtns.forEach(btn => btn.classList.remove('active'));
+        });
+
+        // Update Progress Function
+        function updateProgress(amount) {
+            // Get current values
+            const current = parseFloat(currentAmount.textContent);
+            const goal = parseFloat(goalAmount.textContent);
+            const donors = parseInt(donorsCount.textContent);
+            
+            // Update values
+            const newAmount = current + amount;
+            const newPercentage = (newAmount / goal) * 100;
+            const newDonors = donors + 1;
+            
+            // Animate progress
+            animateValue(currentAmount, current, newAmount, 1000);
+            animateProgress(progressBar, newPercentage);
+            animateValue(donorsCount, donors, newDonors, 1000);
+        }
+
+        // Animate Value Function
+        function animateValue(element, start, end, duration) {
+            let startTimestamp = null;
+            const step = (timestamp) => {
+                if (!startTimestamp) startTimestamp = timestamp;
+                const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+                const value = Math.floor(progress * (end - start) + start);
+                element.textContent = value;
+                if (progress < 1) {
+                    window.requestAnimationFrame(step);
+                }
+            };
+            window.requestAnimationFrame(step);
+        }
+
+        // Animate Progress Bar
+        function animateProgress(element, percentage) {
+            element.style.width = `${percentage}%`;
+            
+            // Update percentage text
+            const progressInfo = document.querySelector('.progress-info span:first-child');
+            progressInfo.textContent = `${Math.round(percentage)}% Funded`;
+        }
+
+        // Show Toast Notification
+        function showToast(message) {
+            toast.textContent = message;
+            toast.classList.add('show');
+            
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        // Scroll Animation
+        function revealOnScroll() {
+            const elements = document.querySelectorAll('.fade-in');
+            const windowHeight = window.innerHeight;
+            
+            elements.forEach(element => {
+                const elementPosition = element.getBoundingClientRect().top;
+                
+                if (elementPosition < windowHeight - 100) {
+                    element.classList.add('active');
+                }
+            });
+        }
+
+        // Initial scroll check and add scroll event listener
+        revealOnScroll();
+        window.addEventListener('scroll', revealOnScroll);
+
+        // Hero Candle Flames
+        function addCandleFlames() {
+            const heroSection = document.querySelector('.hero');
+            
+            for (let i = 0; i < 20; i++) {
+                const flame = document.createElement('div');
+                flame.classList.add('hero-candle');
+                
+                const size = Math.random() * 30 + 10;
+                flame.style.width = `${size}px`;
+                flame.style.height = `${size * 1.5}px`;
+                
+                flame.style.left = `${Math.random() * 100}%`;
+                flame.style.top = `${Math.random() * 100}%`;
+                
+                flame.innerHTML = '🕯️';
+                flame.style.fontSize = `${size}px`;
+                
+                heroSection.appendChild(flame);
+            }
+        }
+
+        addCandleFlames();
+
+        // Random Candle Image - Removed to fix the flashing issue
+        // const candleImages = [
+        //     'https://i.imgur.com/Dxt9lkV.png',
+        //     'https://i.imgur.com/Dxt9lkV.png',
+        //     'https://i.imgur.com/Dxt9lkV.png'
+        // ];
+
+        // // Set initial candle image
+        // candleImage.src = candleImages[0];
+
+        // // Change candle image every 5 seconds
+        // let imageIndex = 0;
+        // setInterval(() => {
+        //     imageIndex = (imageIndex + 1) % candleImages.length;
+        //     candleImage.classList.remove('animate__animated', 'animate__zoomIn');
+        //     void candleImage.offsetWidth; // Trigger reflow
+        //     candleImage.classList.add('animate__animated', 'animate__zoomIn');
+        //     candleImage.src = candleImages[imageIndex];
+        // }, 5000);
+
+        // Initialize GSAP ScrollTrigger
+        gsap.registerPlugin(ScrollTrigger);
+
+        // GSAP Animations
+        gsap.from('.hero-title', {
+            duration: 1,
+            y: -50,
+            opacity: 0,
+            ease: 'power3.out'
+        });
+
+        gsap.from('.hero-subtitle', {
+            duration: 1,
+            y: -30,
+            opacity: 0,
+            ease: 'power3.out',
+            delay: 0.3
+        });
+
+        gsap.from('.hero-img', {
+            duration: 1,
+            scale: 0.5,
+            opacity: 0,
+            ease: 'back.out(1.7)',
+            delay: 0.6
+        });
+
+        gsap.from('.cta-btn', {
+            duration: 1,
+            y: 30,
+            opacity: 0,
+            ease: 'power3.out',
+            delay: 0.9
+        });
+
+        // Section Animations
+        const sections = document.querySelectorAll('.section');
+        
+        sections.forEach(section => {
+            gsap.from(section.querySelector('.section-title'), {
+                scrollTrigger: {
+                    trigger: section,
+                    start: 'top 80%'
+                },
+                duration: 0.8,
+                y: 50,
+                opacity: 0,
+                ease: 'power3.out'
+            });
+        });
+
+        // Random confetti when donation submitted
+        function showConfetti() {
+            const confettiColors = ['#7371fc', '#5e60ce', '#64dfdf', '#48bb78'];
+            const confettiContainer = document.createElement('div');
+            confettiContainer.style.position = 'fixed';
+            confettiContainer.style.top = '0';
+            confettiContainer.style.left = '0';
+            confettiContainer.style.width = '100%';
+            confettiContainer.style.height = '100%';
+            confettiContainer.style.pointerEvents = 'none';
+            confettiContainer.style.zIndex = '9999';
+            document.body.appendChild(confettiContainer);
+            
+            for (let i = 0; i < 150; i++) {
+                const confetti = document.createElement('div');
+                confetti.style.position = 'absolute';
+                confetti.style.width = `${Math.random() * 10 + 5}px`;
+                confetti.style.height = `${Math.random() * 10 + 5}px`;
+                confetti.style.backgroundColor = confettiColors[Math.floor(Math.random() * confettiColors.length)];
+                confetti.style.borderRadius = '50%';
+                confetti.style.left = `${Math.random() * 100}%`;
+                confetti.style.top = '-20px';
+                confetti.style.opacity = Math.random() * 0.8 + 0.2;
+                confettiContainer.appendChild(confetti);
+                
+                gsap.to(confetti, {
+                    y: `${window.innerHeight + 100}px`,
+                    x: `${(Math.random() - 0.5) * 200}px`,
+                    rotation: Math.random() * 360,
+                    duration: Math.random() * 3 + 2,
+                    ease: 'power1.out',
+                    onComplete: () => {
+                        confetti.remove();
+                    }
+                });
+            }
+            
+            setTimeout(() => {
+                confettiContainer.remove();
+            }, 5000);
+        }
+
+        // Show confetti when form is submitted
+        donationForm.addEventListener('submit', (e) => {
+            showConfetti();
+        });
+
+        // Initialize the progress bar
+        progressBar.style.width = '0%';
+        
+        // Initial goal amount
+        goalAmount.textContent = '1000';
+        
+        // Load initial progress data
+        setTimeout(() => {
+            updateProgress(0); // Initial donation of $0
+        }, 1000);
+        
+        // Parallax effect on hero section
+        window.addEventListener('scroll', () => {
+            const scrollPosition = window.scrollY;
+            const heroSection = document.querySelector('.hero');
+            const heroContent = document.querySelector('.hero-content');
+            
+            heroContent.style.transform = `translateY(${scrollPosition * 0.3}px)`;
+            heroSection.style.backgroundPosition = `50% ${50 + scrollPosition * 0.05}%`;
+        });
+    </script>
+</body>
+</html>
