@@ -1,0 +1,2290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
+<title>Paste-Up — mock article studio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Archivo:ital,wght@0,100..900;1,100..900&family=Bitter:ital,wght@0,100..900;1,100..900&family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=IBM+Plex+Sans:ital,wght@0,100..700;1,100..700&family=Inter:ital,wght@0,100..900;1,100..900&family=Libre+Franklin:ital,wght@0,100..900;1,100..900&family=Lora:ital,wght@0,400..700;1,400..700&family=Merriweather:ital,opsz,wght@0,18..144,300..900;1,18..144,300..900&family=Newsreader:ital,opsz,wght@0,6..72,200..800;1,6..72,200..800&family=Oswald:wght@200..700&family=PT+Serif:ital,wght@0,400;0,700;1,400;1,700&family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Public+Sans:ital,wght@0,100..900;1,100..900&family=Roboto+Slab:wght@100..900&family=Source+Serif+4:ital,opsz,wght@0,8..60,200..900;1,8..60,200..900&family=Space+Grotesk:wght@300..700&family=Work+Sans:ital,wght@0,100..900;1,100..900&family=EB+Garamond:ital,wght@0,400..800;1,400..800&family=Crimson+Pro:ital,wght@0,200..900;1,200..900&family=Domine:wght@400..700&family=Spectral:ital,wght@0,300;0,400;0,600;0,700;1,400;1,700&family=Fraunces:ital,opsz,wght@0,9..144,100..900;1,9..144,100..900&family=Libre+Caslon+Text:ital,wght@0,400;0,700;1,400&family=Old+Standard+TT:ital,wght@0,400;0,700;1,400&family=Barlow:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400;1,700&family=Barlow+Condensed:wght@400;500;600;700&family=Montserrat:ital,wght@0,100..900;1,100..900&family=Poppins:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=Karla:ital,wght@0,200..800;1,200..800&family=Rubik:ital,wght@0,300..900;1,300..900&family=Manrope:wght@200..800&family=Bebas+Neue&family=Abril+Fatface&family=Courier+Prime:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<style>
+  :root{
+    --tool-bg:#17191d; --tool-panel:#1e2126; --tool-line:#2d3138;
+    --tool-ink:#e9e8e3; --tool-dim:#8b9099; --tool-accent:#ffce45;
+    --board:#e9e7e1;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html,body{height:100%;}
+  body{
+    font-family:'Inter',system-ui,sans-serif;
+    background:var(--tool-bg); color:var(--tool-ink);
+    display:flex; flex-direction:column; height:100vh; overflow:hidden;
+  }
+
+  header.toolbar{
+    display:flex; align-items:center; gap:10px; flex-wrap:wrap;
+    padding:10px 16px; border-bottom:1px solid var(--tool-line);
+    background:var(--tool-bg); flex:none;
+  }
+  .toolbar .brandblock{display:flex; flex-direction:column; justify-content:center; gap:2px;}
+  .wordmark{font-family:'Space Grotesk',sans-serif; font-weight:700; letter-spacing:.05em; font-size:21px; line-height:1;}
+  .wordmark em{font-style:normal; color:var(--tool-accent);}
+  .toolbar .sub{font-size:11px; color:var(--tool-dim); letter-spacing:.06em; text-transform:uppercase; line-height:1;}
+  .toolbar .spacer{flex:1;}
+  .tb-actions{
+    display:flex; align-items:center; gap:10px; flex-wrap:wrap;
+    justify-content:flex-end; margin-left:auto; flex:1;
+  }
+  .btn{
+    font:600 12px/1 'Inter',sans-serif; letter-spacing:.02em;
+    padding:9px 14px; border-radius:7px; border:1px solid var(--tool-line);
+    background:var(--tool-panel); color:var(--tool-ink); cursor:pointer;
+  }
+  .btn:hover{border-color:#4a5058;}
+  .btn:disabled{opacity:.4; cursor:default;}
+  .btn:disabled:hover{border-color:var(--tool-line);}
+  .btn.primary{background:var(--tool-accent); border-color:var(--tool-accent); color:#17191d;}
+  .btn.primary:hover{filter:brightness(1.06);}
+  .btn.small{padding:7px 10px; font-size:11px;}
+  .btn:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible{
+    outline:2px solid var(--tool-accent); outline-offset:1px;
+  }
+
+  main{flex:1; display:flex; min-height:0; position:relative;}
+
+  #board{
+    flex:1; overflow:auto; background:var(--board);
+    background-image:
+      linear-gradient(rgba(0,0,0,.035) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,0,0,.035) 1px, transparent 1px);
+    background-size:24px 24px;
+    display:flex; align-items:flex-start; justify-content:center;
+    padding:40px 20px 80px; scroll-behavior: smooth;
+  }
+  #cardWrap{position:relative; margin:auto;}
+  #cardWrap::before,#cardWrap::after{
+    content:""; position:absolute; width:14px; height:14px; pointer-events:none;
+    border:0 solid rgba(0,0,0,.35);
+  }
+  #cardWrap::before{top:-18px; left:-18px; border-left-width:1px; border-top-width:1px;}
+  #cardWrap::after{bottom:-18px; right:-18px; border-right-width:1px; border-bottom-width:1px;}
+
+  #panel{
+    width:380px; flex:none; overflow-y:auto; scroll-behavior: smooth;
+    background:var(--tool-panel); border-left:1px solid var(--tool-line);
+    padding:10px 16px 60px;
+  }
+  details.group{border-bottom:1px solid var(--tool-line);}
+  details.group>summary{
+    font-size:10.5px; font-weight:700; letter-spacing:.14em; text-transform:uppercase;
+    color:var(--tool-dim); display:flex; align-items:center; gap:8px;
+    cursor:pointer; list-style:none; padding:13px 0; user-select:none;
+  }
+  details.group>summary::-webkit-details-marker{display:none;}
+  details.group>summary::before{
+    content:""; width:0; height:0; flex:none;
+    border-left:5px solid var(--tool-dim); border-top:4px solid transparent; border-bottom:4px solid transparent;
+    transition:transform .15s ease;
+  }
+  details.group[open]>summary::before{transform:rotate(90deg);}
+  details.group>summary:hover{color:var(--tool-ink);}
+  .g-body{padding:2px 0 16px;}
+
+  .sub-section{background:rgba(0,0,0,.15); border:1px solid var(--tool-line); border-radius:8px; padding:12px; margin-bottom:14px;}
+  .sub-section h4{font-size:10px; font-weight:700; text-transform:uppercase; color:var(--tool-accent); margin-bottom:10px; letter-spacing:.05em;}
+
+  .field{margin-bottom:10px;}
+  .field label{display:block; font-size:11.5px; font-weight:500; color:var(--tool-dim); margin-bottom:4px;}
+  .field input[type=text], .field input[type=number], .field textarea, .field select{
+    width:100%; background:#14161a; border:1px solid var(--tool-line); border-radius:6px;
+    color:var(--tool-ink); font:400 13px/1.4 'Inter',sans-serif; padding:8px 9px;
+  }
+  .field textarea{resize:vertical; min-height:56px;}
+  .row2{display:grid; grid-template-columns:1fr 1fr; gap:8px;}
+
+  .chips{display:flex; flex-wrap:wrap; gap:6px;}
+  .chip{
+    font:600 11.5px/1 'Inter',sans-serif; padding:8px 11px; border-radius:20px;
+    border:1px solid var(--tool-line); background:#14161a; color:var(--tool-ink); cursor:pointer;
+  }
+  .chip:hover{border-color:#4a5058;}
+  .chip.active{background:var(--tool-accent); color:#17191d; border-color:var(--tool-accent);}
+
+  .toggles{display:grid; grid-template-columns:1fr 1fr; gap:2px 10px; margin-bottom:8px;}
+  .tgl{display:flex; align-items:center; gap:7px; font-size:12px; padding:5px 2px; cursor:pointer; color:var(--tool-ink);}
+  .tgl input{accent-color:var(--tool-accent); width:14px; height:14px; cursor:pointer; flex:none;}
+  .tgl.main{font-weight:700;}
+
+  .slider-row{display:flex; align-items:center; gap:10px;}
+  .slider-row input[type=range]{flex:1; accent-color:var(--tool-accent); min-width:0;}
+  .slider-row output{font-size:11px; color:var(--tool-dim); width:40px; text-align:right; flex:none;}
+
+  .colors{display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:10px;}
+  .color-field{display:flex; align-items:center; gap:8px; background:#14161a; border:1px solid var(--tool-line); border-radius:6px; padding:6px 8px;}
+  .color-field input[type=color]{width:26px; height:26px; border:none; background:none; padding:0; cursor:pointer; flex:none;}
+  .color-field span{font-size:11.5px; color:var(--tool-dim);}
+
+  .seg{display:flex; border:1px solid var(--tool-line); border-radius:7px; overflow:hidden;}
+  .seg button{flex:1; background:#14161a; color:var(--tool-dim); border:none; padding:8px 0; font:600 11.5px 'Inter'; cursor:pointer;}
+  .seg button.active{background:var(--tool-accent); color:#17191d;}
+  .seg button+button{border-left:1px solid var(--tool-line);}
+
+  #scrollTopBtn{
+    display:none; position:fixed; bottom:20px; right:20px; z-index:100;
+    width:44px; height:44px; border-radius:50%; background:var(--tool-accent);
+    color:#17191d; border:none; cursor:pointer; font-size:20px;
+    box-shadow:0 4px 12px rgba(0,0,0,0.3); transition:transform 0.2s;
+  }
+  #scrollTopBtn:hover{transform:translateY(-2px);}
+
+  #card{
+    width:var(--card-w,420px); max-width:calc(100vw - 48px);
+    background:var(--a-bg,#fff); color:var(--a-text,#26282c);
+    border-radius:var(--a-radius,0px); overflow:hidden;
+    box-shadow:0 2px 6px rgba(20,18,10,.12), 0 24px 60px -18px rgba(20,18,10,.35);
+    font-family:var(--a-body-font,'Inter'),sans-serif;
+  }
+  #card .browser{
+    background:#101114; color:#f2f2f2; padding:12px 14px;
+    display:flex; align-items:center; gap:14px; font-family:'Inter',sans-serif;
+  }
+  #card .browser .x{font-size:17px; line-height:1; opacity:.9;}
+  #card .browser .urlpill{
+    flex:1; background:#26272c; border-radius:22px; padding:9px 14px;
+    font-size:13px; display:flex; align-items:center; gap:8px; color:#e8e8e8;
+    white-space:nowrap; overflow:hidden;
+  }
+  #card .browser .urlpill svg{width:11px; height:11px; opacity:.75; flex:none;}
+  #card .browser>svg{width:18px; height:18px; opacity:.92; flex:none;}
+
+  #card .masthead{
+    display:flex; align-items:center; gap:14px;
+    padding:0 14px; height:var(--a-mast-h,58px);
+    background:var(--a-mast-bg,transparent);
+    border-bottom:var(--mast-line, 1px solid #e4e2dc);
+  }
+  #card .masthead.align-center{
+    display:grid; grid-template-columns:minmax(0,1fr) auto minmax(0,1fr); column-gap:12px;
+  }
+
+  #card .masthead .hbtn{color:var(--a-icon,#26282c); display:flex; flex:none;}
+  #card .masthead .hbtn svg{width:21px; height:21px;}
+  #card .masthead .hbtn.ghost{width:21px; height:21px;}
+  #card .masthead.align-center .hbtn{justify-self:start;}
+
+  #card .masthead .brand{display:flex; align-items:center; gap:10px; min-width:0;}
+  #card .masthead.align-left .brand{flex:1;}
+  #card .masthead.align-center .brand{justify-self:center; min-width:0; max-width:100%; overflow:hidden;}
+
+  #card .masthead .name{
+    font-family:var(--a-mast-font,'Playfair Display'),serif;
+    font-weight:var(--a-mast-w,800); font-style:var(--a-mast-s,normal);
+    font-size:var(--a-mast-size,20px); letter-spacing:.01em;
+    color:var(--a-outlet,#141414); white-space:nowrap; line-height:1.25;
+    min-width:0; overflow:hidden; text-overflow:ellipsis;
+  }
+
+  #card .masthead .hicons{
+    display:flex; align-items:center; gap:16px; margin-left:auto; flex:none;
+    color:var(--a-icon,#26282c);
+  }
+  #card .masthead.align-center .hicons{justify-self:end; margin-left:0;}
+  #card .masthead .hicons svg{width:19px; height:19px;}
+  #card .masthead .hicons:empty{display:none;}
+
+  #card .mast-btn{
+    background:var(--a-sub,#8e1b13); color:#fff;
+    padding:6px 12px; border-radius:var(--mast-btn-radius, 4px);
+    font-family:var(--a-mastbtn-font,'Inter'),sans-serif;
+    font-weight:var(--a-mastbtn-w,600); font-style:var(--a-mastbtn-s,normal);
+    font-size:var(--a-mastbtn-size,12.5px); line-height:1;
+    cursor:pointer; border:none; white-space:nowrap; letter-spacing:0.02em;
+  }
+
+  #card .logo{
+    flex:none; display:inline-flex; align-items:center; justify-content:center;
+    height:var(--l-size,34px); min-width:var(--l-size,34px);
+    padding:0 calc(var(--l-size,34px)*.17);
+    background:var(--l-bg,#1a1a1a); color:var(--l-fg,#ffffff);
+    font-family:var(--a-logo-font,'Archivo'),sans-serif; 
+    font-weight:var(--a-logo-w,800); font-style:var(--a-logo-s,normal);
+    font-size:var(--l-font-sz, 14px); letter-spacing:.02em; line-height:1;
+  }
+  #card .logo:not(.nobox):not(.hastext){aspect-ratio:1;}
+  #card .logo .lg-up{display:block; height:var(--l-icon,15px); width:auto; max-width:280px; object-fit:contain;}
+  #card .logo .lg-in{display:flex; align-items:center; gap:.2em;}
+  #card .logo svg{width:var(--l-icon,15px); height:var(--l-icon,15px); display:block;}
+  #card .logo.square{border-radius:0;}
+  #card .logo.rounded{border-radius:9px;}
+  #card .logo.circle{border-radius:999px;}
+  #card .logo.diamond{transform:rotate(45deg) scale(.88); width:var(--l-size,34px); padding:0;}
+  #card .logo.diamond .lg-in{transform:rotate(-45deg);}
+  #card .logo.nobox{background:transparent; color:var(--l-fg,#1a1a1a); min-width:0; padding:0;}
+
+  #card .tabs{
+    display:flex; gap:26px; padding:var(--tab-pad, 13px) 16px; overflow-x:auto; scrollbar-width:none;
+    background:var(--a-tab-bg,#ececea);
+    font-family:var(--a-tab-font,'Inter'),sans-serif; 
+    font-weight:var(--a-tab-w,600); font-style:var(--a-tab-s,normal);
+    font-size:var(--a-tab-size,14px); line-height:1; color:var(--a-tab-text,#333);
+  }
+  #card .tabs::-webkit-scrollbar{display:none;}
+  #card .tabs span{white-space:nowrap;}
+  #card .tabs.text span.on{color:var(--a-tab-active,#2a7dbf); font-weight:700; text-transform:uppercase; letter-spacing:.03em;}
+  #card .tabs.underline span{padding-bottom:6px; border-bottom:2px solid transparent;}
+  #card .tabs.underline span.on{border-bottom-color:var(--a-tab-active); color:var(--a-tab-active); font-weight:700;}
+  #card .tabs.pill span{padding:6px 12px; border-radius:20px;}
+  #card .tabs.pill span.on{background:var(--a-tab-active); color:#fff; font-weight:700;}
+
+  #card .bodypad{padding:22px 20px 30px;}
+  #card .crumbs{
+    font-family:var(--a-crumb-font,'Inter'),sans-serif; 
+    font-weight:var(--a-crumb-w,500); font-style:var(--a-crumb-s,normal);
+    font-size:var(--sz-crumb, 13px); color:var(--a-crumb,#2a7dbf); 
+    margin-bottom:var(--sp-crumb, 16px); text-align:var(--al-crumb, left);
+  }
+  #card .crumbs .sep{color:#000000; margin:0 6px;}
+
+  #card .kickerwrap{text-align:var(--al-kicker,left); margin-bottom:var(--sp-kicker, 13px);}
+  #card .kicker{
+    display:inline-block; font-size:var(--sz-kicker, 12.5px); letter-spacing:.09em; text-transform:var(--k-case, uppercase);
+    font-family:var(--a-kicker-font,'Inter'),sans-serif;
+    font-weight:var(--a-kicker-w,700); font-style:var(--a-kicker-s,normal);
+  }
+  #card .kicker.text{color:var(--k-text);}
+  #card .kicker.box{background:var(--k-border); color:var(--k-text); padding:var(--k-pad,7px) calc(var(--k-pad,7px) * 1.7); border-radius:3px;}
+  #card .kicker.outline{border:1.5px solid var(--k-border); color:var(--k-text); padding:var(--k-pad,7px) calc(var(--k-pad,7px) * 1.7); border-radius:3px;}
+
+  #card h1.headline{
+    font-family:var(--a-head-font,'Playfair Display'),serif;
+    font-weight:var(--a-head-w,800); font-style:var(--a-head-s,normal);
+    font-size:var(--a-head-size,34px); line-height:var(--a-head-line,1.14);
+    letter-spacing:var(--a-head-ls,-0.01em); color:var(--a-ink,#141414);
+    text-align:var(--al-head,left); text-transform:var(--a-head-case,none);
+    margin-bottom:var(--sp-head, 14px);
+  }
+  #card .dek{
+    font-size:var(--sz-dek, 16px); line-height:1.5; color:var(--a-dek,#5a5c60);
+    text-align:var(--al-dek,left); margin-bottom:var(--sp-dek, 18px);
+    font-family:var(--a-dek-font,'Inter'),sans-serif;
+    font-weight:var(--a-dek-w,400); font-style:var(--a-dek-s,normal);
+  }
+  
+  #card .divider{
+    border:0; border-top-width:var(--div-w, 1px); border-top-style:var(--div-s, solid); border-top-color:var(--div-c, #e4e2dc);
+    margin-top:var(--sp-divtop, 18px); margin-bottom:var(--sp-divbot, 18px);
+  }
+  #card .divider.short{width:60px; margin-left:auto; margin-right:auto;}
+  #card .divider.dots{border:none; text-align:center; color:var(--div-c); font-size:24px; line-height:0.5; letter-spacing:4px;}
+  #card .divider.dots::after{content:"•••";}
+
+  #card .byline{
+    display:flex; gap:12px; margin-bottom:var(--sp-byline, 14px);
+    flex-direction:var(--al-by-dir, row); text-align:var(--al-by-text, left);
+    justify-content:var(--al-by, flex-start); align-items:center;
+  }
+  #card .bywho .author{
+    font-family:var(--a-byline-font,'Inter'),sans-serif;
+    font-weight:var(--a-byline-w,600); font-style:var(--a-byline-s,normal);
+    font-size:var(--sz-by, 14.5px); text-decoration:var(--by-und, underline); text-underline-offset:3px; text-decoration-thickness:1px;
+  }
+  #card .bywho .byword{
+    font-family:var(--a-byline-font,'Inter'),sans-serif;
+    font-weight:400; font-style:var(--a-byline-s,normal);
+    font-size:var(--sz-by, 14.5px);
+  }
+  #card .bywho .date{
+    font-family:var(--a-date-font,'Inter'),sans-serif;
+    font-weight:var(--a-date-w,400); font-style:var(--a-date-s,normal);
+    font-size:var(--sz-date, 13.5px); color:var(--a-muted,#77797e); margin-top:4px;
+  }
+  
+  #card .updated{
+    display:flex; align-items:center; gap:8px; margin-bottom:var(--sp-upd, 14px);
+    font-family:var(--a-upd-font,'Inter'),sans-serif;
+    font-weight:var(--a-upd-w,600); font-style:var(--a-upd-s,normal);
+    font-size:var(--sz-upd, 13px); color:var(--upd-text,#c8102e);
+    justify-content:var(--al-upd, flex-start); line-height:1;
+  }
+  #card .updated i{width:8px; height:8px; border-radius:50%; background:var(--upd-dot); flex:none;}
+  
+  #card .metarow{display:flex; align-items:center; gap:10px; margin-bottom:var(--sp-meta, 16px); flex-wrap:wrap; justify-content:var(--al-by,flex-start);}
+  
+  #card .tagchip{
+    font-family:var(--a-tag-font,'Inter'),sans-serif; 
+    font-weight:var(--a-tag-w,600); font-style:var(--a-tag-s,normal);
+    font-size:var(--sz-tag, 12.5px); line-height:1;
+    display:inline-flex; align-items:center;
+  }
+  #card .sidetext{
+    display:inline-block; margin-left:10px; line-height:1; vertical-align:middle; white-space:nowrap;
+  }
+  #card .sidetext.k{
+    font-family:var(--a-kicker-font,'Inter'),sans-serif; font-weight:600;
+    font-size:var(--sz-kicker, 12.5px); color:var(--kside-c,#c8102e);
+  }
+  #card .sidetext.t{
+    font-family:var(--a-tag-font,'Inter'),sans-serif; font-weight:600;
+    font-size:var(--sz-tag, 12.5px); color:var(--tside-c,#c8102e);
+  }
+  #card .tagchip.box{background:var(--t-border); color:var(--t-text); padding:8px 14px; border:1.5px solid var(--t-border); border-radius:3px;}
+  #card .tagchip.outline{background:transparent; color:var(--t-text); padding:8px 14px; border:1.5px solid var(--t-border); border-radius:3px;}
+  #card .tagchip.text{background:transparent; color:var(--t-text); padding:0; border:none;}
+
+  #card .sharebtn{
+    display:inline-flex; align-items:center; gap:8px; border:1.5px solid var(--a-share,#222);
+    color:var(--a-share,#222); border-radius:var(--share-radius, 8px); padding:8px 14px;
+    font-family:var(--a-share-font,'Inter'),sans-serif; 
+    font-weight:var(--a-share-w,600); font-style:var(--a-share-s,normal);
+    font-size:var(--sz-share, 13px); line-height:1;
+  }
+  #card .sharebtn svg{width:1em; height:1em;}
+  
+  #card .imgblock{
+    margin-top:var(--sp-imgtop, 0px);
+    margin-bottom:var(--sp-img, 20px); aspect-ratio:var(--img-ratio,16 / 10); border-radius:var(--img-corner,0px);
+    background:
+      linear-gradient(45deg, transparent 49.6%, rgba(0,0,0,.14) 49.6%, rgba(0,0,0,.14) 50.4%, transparent 50.4%),
+      linear-gradient(-45deg, transparent 49.6%, rgba(0,0,0,.14) 49.6%, rgba(0,0,0,.14) 50.4%, transparent 50.4%),
+      var(--a-imgbg,#d8d6cf);
+    display:flex; align-items:center; justify-content:center;
+  }
+  #card .imgblock{position:relative; overflow:hidden;}
+  #card .imgblock img{position:absolute; inset:0; width:100%; height:100%; object-fit:cover; display:block;}
+  #card .imgblock.has-img{cursor:grab; touch-action:none;}
+  #card .imgblock.has-img:active{cursor:grabbing;}
+  #card .imgblock.has-img span{display:none;}
+  #card .imgblock span{
+    font:600 11px/1 'Inter'; letter-spacing:.14em; color:rgba(0,0,0,.4);
+    background:var(--a-imgbg,#d8d6cf); padding:4px 8px;
+  }
+  #card .caption{font-size:13.5px; color:var(--a-muted,#77797e); margin-top:-10px; margin-bottom:var(--sp-img, 20px);}
+  
+  #card .imgblock.hero{margin:0; border-radius:0;}
+  #card .caption.herocap{margin:10px 20px var(--sp-img, 20px);}
+
+  #card .bodycopy p, #card .bodycopy div, #card .bodycopy li{
+    font-size:var(--sz-body, 16px); line-height:var(--body-line, 1.62); color:var(--a-text,#26282c); 
+    font-family:var(--a-body-font,'Inter'),sans-serif;
+    font-weight:var(--a-body-w,400); font-style:var(--a-body-s,normal);
+    margin-bottom:var(--sp-p, 14px);
+  }
+  #card .bodycopy li{margin-bottom:calc(var(--sp-p, 14px) * .4);}
+  #card .bodycopy ul, #card .bodycopy ol{margin:0 0 var(--sp-p, 14px) 1.4em;}
+  #card .bodycopy a{color:inherit;}
+  #card .bodycopy.dropcap > p:first-of-type::first-letter{
+    float:left; font-size:3.1em; line-height:.82; padding:4px 8px 0 0;
+    font-family:var(--a-head-font,'Playfair Display'),serif; font-weight:700; color:var(--a-ink,#141414);
+  }
+  #card .footer-mark{
+    font-family:var(--a-footer-font,'Inter'),sans-serif;
+    font-weight:var(--a-footer-w,600); font-style:var(--a-footer-s,normal);
+    font-size:var(--sz-footer, 10px); color:var(--a-footer-c,#9a9a94);
+    text-align:var(--al-footer, center); padding:20px 0 10px; opacity:.65; letter-spacing:.05em;
+  }
+
+  #toast{
+    position:fixed; bottom:74px; left:50%; z-index:200;
+    transform:translateX(-50%) translateY(8px);
+    background:#0f1113; color:var(--tool-ink); border:1px solid var(--tool-line);
+    padding:10px 16px; border-radius:8px; font-size:12.5px;
+    opacity:0; pointer-events:none; transition:opacity .2s ease, transform .2s ease;
+    max-width:calc(100vw - 32px); text-align:center;
+  }
+  #toast.show{opacity:1; transform:translateX(-50%);}
+
+  .preset-wrap{position:relative;}
+  .pop{
+    position:absolute; left:0; top:calc(100% + 8px); z-index:150;
+    width:270px; max-width:calc(100vw - 24px);
+    background:var(--tool-panel); border:1px solid var(--tool-line);
+    border-radius:10px; padding:10px; box-shadow:0 14px 34px rgba(0,0,0,.5);
+  }
+  .pop-row{display:flex; gap:6px; margin-bottom:8px;}
+  .pop-row input{
+    flex:1; min-width:0; background:#14161a; border:1px solid var(--tool-line);
+    border-radius:6px; color:var(--tool-ink); font:400 12.5px/1.4 'Inter',sans-serif; padding:8px 9px;
+  }
+  .preset-item{display:flex; align-items:center; gap:4px;}
+  .preset-item .pname{
+    flex:1; min-width:0; text-align:left; background:none; border:none; cursor:pointer;
+    color:var(--tool-ink); font:500 12.5px/1.3 'Inter',sans-serif; padding:8px 6px; border-radius:6px;
+    overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+  }
+  .preset-item .pname:hover{background:rgba(255,255,255,.06);}
+  .preset-item .pdel{
+    flex:none; background:none; border:none; cursor:pointer; border-radius:6px;
+    color:var(--tool-dim); font-size:13px; padding:7px 9px; line-height:1;
+  }
+  .preset-item .pdel:hover{color:#ff8577; background:rgba(255,255,255,.06);}
+  .pop-empty{font-size:12px; color:var(--tool-dim); padding:4px 4px 2px;}
+
+  .file-row{display:flex; gap:6px; align-items:center;}
+  .file-row input[type=file]{display:none;}
+
+  #exportModal{
+    position:fixed; inset:0; z-index:300; padding:20px;
+    background:rgba(10,11,13,.8); display:none; align-items:center; justify-content:center;
+  }
+  #exportModal.show{display:flex;}
+  .em-box{
+    background:var(--tool-panel); border:1px solid var(--tool-line); border-radius:12px;
+    padding:14px; max-width:420px; width:100%; max-height:92vh;
+    display:flex; flex-direction:column; gap:10px;
+  }
+  .em-box img{width:100%; height:auto; max-height:58vh; object-fit:contain; border-radius:6px; background:#0f1113;}
+  .em-hint{font-size:11.5px; color:var(--tool-dim); text-align:center; line-height:1.5;}
+  .em-row{display:flex; gap:8px;}
+  .em-row .btn{flex:1;}
+
+  .tray-handle{display:none;}
+
+  /* ---- format preview (zoomed-out Wide / Tablet view) ---- */
+  #previewBar{
+    display:none; position:fixed; bottom:16px; left:50%; transform:translateX(-50%);
+    z-index:90; gap:8px; align-items:center;
+    background:var(--tool-panel); border:1px solid var(--tool-line); border-radius:12px;
+    padding:8px; box-shadow:0 10px 28px rgba(0,0,0,.45);
+  }
+  #previewBar .pv-label{font-size:10.5px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--tool-dim); padding:0 4px;}
+  body.preview #previewBar{display:flex;}
+  body.preview #panel{display:none;}
+  body.preview #card{max-width:none;}
+  body.preview #board{padding:24px 12px 100px;}
+  body.preview #scrollTopBtn{display:none !important;}
+
+  /* ---- rich text editor modal ---- */
+  #rtModal{
+    position:fixed; inset:0; z-index:300; padding:16px;
+    background:rgba(10,11,13,.8); display:none; align-items:center; justify-content:center;
+  }
+  #rtModal.show{display:flex;}
+  .rt-box{
+    background:var(--tool-panel); border:1px solid var(--tool-line); border-radius:12px;
+    padding:14px; max-width:560px; width:100%; max-height:92vh;
+    display:flex; flex-direction:column; gap:10px;
+  }
+  .rt-bar{display:flex; gap:6px; flex-wrap:wrap;}
+  .rt-bar button{
+    min-width:36px; padding:8px 10px; border-radius:6px; border:1px solid var(--tool-line);
+    background:#14161a; color:var(--tool-ink); cursor:pointer; font:600 13px/1 'Inter',sans-serif;
+  }
+  .rt-bar button:hover{border-color:#4a5058;}
+  #rtArea{
+    flex:1; min-height:180px; max-height:50vh; overflow-y:auto;
+    background:#ffffff; color:#26282c; border-radius:8px; padding:14px;
+    font:400 15px/1.6 'Inter',sans-serif; outline:none;
+  }
+  #rtArea p, #rtArea div{margin-bottom:.7em;}
+  .rt-hint{font-size:11px; color:var(--tool-dim); line-height:1.4;}
+
+  body.clean header.toolbar, body.clean #panel{display:none;}
+  body.clean #scrollTopBtn{display:none !important;}
+  body.clean #board{padding:56px 16px;}
+  body.clean #cardWrap::before, body.clean #cardWrap::after{display:none;}
+  #exitClean{
+    display:none; position:fixed; bottom:18px; left:50%; transform:translateX(-50%);
+    z-index:50; box-shadow:0 6px 20px rgba(0,0,0,.35);
+  }
+  body.clean #exitClean{display:block;}
+
+  .order-list{display:flex; flex-direction:column; gap:4px; margin-top:6px;}
+  .order-row{
+    display:flex; align-items:center; justify-content:space-between;
+    background:#14161a; border:1px solid var(--tool-line); border-radius:6px; padding:7px 8px 7px 10px;
+    font-size:12px; color:var(--tool-ink);
+  }
+  .ob{display:flex; gap:4px;}
+  .ob button{
+    background:var(--tool-panel); border:1px solid var(--tool-line); border-radius:5px;
+    color:var(--tool-ink); cursor:pointer; font-size:12px; padding:4px 9px; line-height:1;
+  }
+  .ob button:hover{border-color:#4a5058;}
+  .ob button:disabled{opacity:.35; cursor:default;}
+
+  .img-item{background:rgba(0,0,0,.15); border:1px solid var(--tool-line); border-radius:8px; padding:10px; margin-bottom:10px;}
+  .img-item-hd{
+    display:flex; align-items:center; justify-content:space-between; gap:8px;
+    font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.05em;
+    color:var(--tool-accent); margin-bottom:10px;
+  }
+
+  @media (max-width:860px){
+    html, body{overscroll-behavior:none;}
+    body{overflow:hidden; height:100vh; height:100dvh; position:fixed; inset:0; width:100%;}
+    main{flex-direction:column;}
+    #board{flex:1; min-height:0; padding:24px 12px 96px;}
+    #panel{
+      position:fixed; left:0; right:0; bottom:0; width:100%;
+      height:min(78vh, 620px); z-index:60;
+      border-left:none; border-top:1px solid var(--tool-line);
+      border-radius:14px 14px 0 0; box-shadow:0 -14px 40px rgba(0,0,0,.45);
+      padding-top:0; overscroll-behavior:contain;
+      transform:translateY(calc(100% - 48px));
+      transition:transform .28s cubic-bezier(.4,0,.2,1);
+    }
+    #panel.open{transform:translateY(0);}
+    .tray-handle{
+      display:flex; flex-direction:column; align-items:center; justify-content:center; gap:5px;
+      height:48px; margin:0 -16px 8px; position:sticky; top:0; z-index:5;
+      background:var(--tool-panel); border-bottom:1px solid var(--tool-line);
+      cursor:grab; touch-action:none; user-select:none; -webkit-user-select:none;
+    }
+    .tray-handle .grab{width:42px; height:4px; border-radius:99px; background:#4a5058;}
+    .tray-handle .th-label{font-size:10px; font-weight:700; letter-spacing:.14em; text-transform:uppercase; color:var(--tool-dim);}
+    .toolbar .sub{display:none;}
+    /* iOS Safari zooms the page when focusing inputs smaller than 16px — keep them at 16px on phones */
+    .field input[type=text], .field input[type=number], .field textarea, .field select, .pop-row input{font-size:16px;}
+    #scrollTopBtn{display:none !important;}
+    body.clean #board{padding:40px 12px;}
+  }
+  @media (prefers-reduced-motion:no-preference){
+    #card{transition:width .25s ease, background-color .25s ease;}
+  }
+</style>
+</head>
+<body>
+
+<header class="toolbar">
+  <div class="brandblock">
+    <div class="wordmark">PASTE<em>-</em>UP</div>
+    <div class="sub">have fun!</div>
+  </div>
+  <div class="tb-actions">
+  <button class="btn small" id="undoBtn" title="Undo (Ctrl/Cmd+Z)" disabled>&#8630; Undo</button>
+  <button class="btn small" id="redoBtn" title="Redo (Ctrl/Cmd+Shift+Z)" disabled>&#8631;</button>
+  <button class="btn small" id="quickSaveBtn" title="Save changes to the current preset">Save</button>
+  <div class="preset-wrap">
+    <button class="btn small" id="presetBtn" aria-haspopup="true" aria-expanded="false" title="Save and load named presets">Presets &#9662;</button>
+    <div id="presetPop" class="pop" hidden>
+      <div class="pop-row">
+        <input type="text" id="presetName" placeholder="Preset name" maxlength="40">
+        <button class="btn primary small" id="presetSaveBtn">Save</button>
+      </div>
+      <div id="presetList"></div>
+    </div>
+  </div>
+  <button class="btn small" id="shuffleBtn" title="Fill with sample fictional content">Shuffle sample</button>
+  <button class="btn small" id="cleanBtn" title="Hide all controls">Clean view</button>
+  <button class="btn primary small" id="exportBtn" title="Download as image">Export PNG</button>
+  </div>
+</header>
+
+<main>
+  <div id="board">
+    <div id="cardWrap">
+      <article id="card" aria-label="Mock article preview"></article>
+    </div>
+  </div>
+
+  <aside id="panel" aria-label="Controls">
+    <div class="tray-handle" id="trayHandle" role="button" tabindex="0" aria-expanded="false" aria-label="Toggle settings tray">
+      <span class="grab"></span>
+      <span class="th-label">Settings</span>
+    </div>
+
+    <details class="group" open>
+      <summary>Global</summary>
+      <div class="g-body">
+        <div class="field"><label>Theme preset</label>
+          <div class="chips" id="themeChips"></div></div>
+        <div class="field"><label>Frame width (on a phone, Wide / Tablet opens a zoomable preview)</label>
+          <div class="seg">
+            <button data-k="cardW" data-v="420">Phone</button>
+            <button data-k="cardW" data-v="560">Wide</button>
+            <button data-k="cardW" data-v="720">Tablet</button>
+          </div></div>
+        <div class="field"><label>Align everything</label>
+          <div class="seg">
+            <button data-k="alignAll" data-v="left">Left</button>
+            <button data-k="alignAll" data-v="center">Center</button>
+          </div></div>
+        <div class="field"><label>Corner radius</label>
+          <div class="slider-row"><input type="range" data-k="radius" min="0" max="28"><output></output></div></div>
+        <div class="colors">
+          <div class="color-field"><input type="color" data-k="bg"><span>Page background</span></div>
+        </div>
+      </div>
+    </details>
+
+    <details class="group">
+      <summary>Browser bar</summary>
+      <div class="g-body">
+        <label class="tgl main"><input type="checkbox" data-k="browser">Show browser bar</label>
+        <div class="field" style="margin-top:8px"><label>URL</label>
+          <input type="text" data-k="url"></div>
+      </div>
+    </details>
+
+    <details class="group">
+      <summary>Header</summary>
+      <div class="g-body">
+        <label class="tgl main"><input type="checkbox" data-k="masthead">Show header</label>
+        <div class="sub-section">
+          <h4>Outlet & Size</h4>
+          <div class="field"><label>Outlet name</label>
+            <input type="text" data-k="outlet"></div>
+          <label class="tgl"><input type="checkbox" data-k="mastLine">Underline outlet / masthead</label>
+          <div class="row2" style="margin-top:8px">
+            <div class="field"><label>Outlet name font</label>
+              <select class="fontsel" data-k="mastFont"></select></div>
+            <div class="field"><label>Weight & Style</label>
+              <select class="ws-sel" data-k="mastWS"></select></div>
+          </div>
+          <div class="field"><label>Name size</label>
+            <div class="slider-row"><input type="range" data-k="mastSize" min="14" max="46"><output></output></div></div>
+          <div class="field"><label>Header height</label>
+            <div class="slider-row"><input type="range" data-k="mastH" min="44" max="96"><output></output></div></div>
+          <div class="field"><label>Header alignment</label>
+            <div class="seg">
+              <button data-k="mastAlign" data-v="flex-start">Left</button>
+              <button data-k="mastAlign" data-v="center">Center</button>
+            </div></div>
+        </div>
+        <div class="sub-section">
+          <h4>Icons, Buttons & Colors</h4>
+          <div class="field"><label>Header elements</label>
+            <div class="toggles">
+              <label class="tgl"><input type="checkbox" data-k="hamburger">Hamburger ☰</label>
+              <label class="tgl"><input type="checkbox" data-k="hsearch">Search</label>
+              <label class="tgl"><input type="checkbox" data-k="hbell">Bell</label>
+              <label class="tgl"><input type="checkbox" data-k="haccount">Account</label>
+              <label class="tgl"><input type="checkbox" data-k="mastBtn">Action Button</label>
+            </div></div>
+          <div class="field"><label>Order of top-right icons &amp; button</label>
+            <div class="order-list" id="hiconOrderList"></div></div>
+          <div class="field"><label>Action button text</label>
+            <input type="text" data-k="mastBtnText"></div>
+          <div class="row2">
+            <div class="field"><label>Action button font</label>
+              <select class="fontsel" data-k="mastBtnFont"></select></div>
+            <div class="field"><label>Weight & Style</label>
+              <select class="ws-sel" data-k="mastBtnWS"></select></div>
+          </div>
+          <div class="row2">
+            <div class="field"><label>Button shape</label>
+              <select data-k="mastBtnRadius">
+                <option value="4px">Rounded</option>
+                <option value="20px">Pill box</option>
+                <option value="0px">Sharp</option>
+              </select></div>
+            <div class="field"><label>Button text size</label>
+              <div class="slider-row"><input type="range" data-k="mastBtnSize" min="10" max="20"><output></output></div></div>
+          </div>
+          <div class="colors">
+            <div class="color-field"><input type="color" data-k="mastBg"><span>Header band</span></div>
+            <div class="color-field"><input type="color" data-k="outletC"><span>Outlet name</span></div>
+            <div class="color-field"><input type="color" data-k="iconC"><span>Icons</span></div>
+            <div class="color-field"><input type="color" data-k="subC"><span>Button color</span></div>
+          </div>
+        </div>
+      </div>
+    </details>
+
+    <details class="group">
+      <summary>Logo mark</summary>
+      <div class="g-body">
+        <label class="tgl main"><input type="checkbox" data-k="logo">Show logo</label>
+        <div class="sub-section">
+          <h4>Format</h4>
+          <div class="row2">
+            <div class="field"><label>Shape</label>
+              <select data-k="logoShape">
+                <option value="square">Square</option><option value="rounded">Rounded</option>
+                <option value="circle">Circle</option><option value="diamond">Diamond</option>
+                <option value="nobox">No box</option>
+              </select></div>
+            <div class="field"><label>Graphic</label>
+              <select data-k="logoIcon">
+                <option value="none">None</option><option value="dot">Dot</option>
+                <option value="bolt">Bolt</option><option value="star">Star</option>
+                <option value="globe">Globe</option><option value="eye">Eye</option>
+                <option value="play">Play</option><option value="wave">Wave</option>
+              </select></div>
+          </div>
+          <div class="field"><label>Custom logo image (stays on your device)</label>
+            <div class="file-row">
+              <label class="chip">Upload image<input type="file" id="logoFile" accept="image/*"></label>
+              <button type="button" class="chip" id="logoFileClear">Remove</button>
+            </div></div>
+          <div class="field"><label>Letters (0–6)</label>
+            <input type="text" data-k="logoText" maxlength="6"></div>
+          <div class="row2">
+            <div class="field"><label>Letter font</label>
+              <select class="fontsel" data-k="logoFont"></select></div>
+            <div class="field"><label>Weight & Style</label>
+              <select class="ws-sel" data-k="logoWS"></select></div>
+          </div>
+        </div>
+        <div class="sub-section">
+          <h4>Sizing & Colors</h4>
+          <div class="field"><label>Box height / width</label>
+            <div class="slider-row"><input type="range" data-k="logoSize" min="22" max="96"><output></output></div></div>
+          <div class="field"><label>Font size</label>
+            <div class="slider-row"><input type="range" data-k="logoFontSize" min="10" max="48"><output></output></div></div>
+          <div class="field"><label>Graphic scale</label>
+            <div class="slider-row"><input type="range" data-k="logoIconSize" min="25" max="170"><output></output></div></div>
+          <div class="colors">
+            <div class="color-field"><input type="color" data-k="logoBg"><span>Fill</span></div>
+            <div class="color-field"><input type="color" data-k="logoFg"><span>Letters / graphic</span></div>
+          </div>
+        </div>
+      </div>
+    </details>
+
+    <details class="group">
+      <summary>Nav tabs</summary>
+      <div class="g-body">
+        <label class="tgl main"><input type="checkbox" data-k="tabs">Show nav tabs</label>
+        <div class="sub-section">
+          <div class="field"><label>Tabs (comma separated)</label>
+            <input type="text" data-k="tabsText"></div>
+          <div class="row2">
+            <div class="field"><label>Tabs font</label>
+              <select class="fontsel" data-k="tabFont"></select></div>
+            <div class="field"><label>Weight & Style</label>
+              <select class="ws-sel" data-k="tabWS"></select></div>
+          </div>
+          <div class="field"><label>Active style</label>
+            <select data-k="tabsStyle">
+              <option value="text">Bold text</option>
+              <option value="underline">Underlined</option>
+              <option value="pill">Pill box</option>
+            </select></div>
+          <div class="field"><label>Tabs text size</label>
+            <div class="slider-row"><input type="range" data-k="tabSize" min="10" max="22"><output></output></div></div>
+          <div class="field"><label>Tab bar padding (vertical spacing)</label>
+            <div class="slider-row"><input type="range" data-k="tabPad" min="4" max="24"><output></output></div></div>
+          <div class="colors">
+            <div class="color-field"><input type="color" data-k="tabBg"><span>Strip</span></div>
+            <div class="color-field"><input type="color" data-k="tabActiveC"><span>Active tab</span></div>
+            <div class="color-field"><input type="color" data-k="tabTextC"><span>Other tabs</span></div>
+          </div>
+        </div>
+      </div>
+    </details>
+
+    <details class="group">
+      <summary>Headline area</summary>
+      <div class="g-body">
+        <div class="sub-section">
+          <h4>Headline</h4>
+          <div class="field"><label>Text</label>
+            <textarea data-k="headline"></textarea></div>
+          <div class="row2">
+            <div class="field"><label>Headline font</label>
+              <select class="fontsel" data-k="headFont"></select></div>
+            <div class="field"><label>Weight & Style</label>
+              <select class="ws-sel" data-k="headWS"></select></div>
+          </div>
+          <div class="row2">
+            <div class="field"><label>Case</label>
+              <select data-k="headCase">
+                <option value="none">As typed</option><option value="uppercase">ALL CAPS</option>
+              </select></div>
+            <div class="field"><label>&nbsp;</label>
+              <div class="colors" style="margin:0"><div class="color-field"><input type="color" data-k="ink"><span>Headline color</span></div></div></div>
+          </div>
+          <div class="field"><label>Headline alignment</label>
+            <div class="seg">
+              <button data-k="headAlign" data-v="left">Left</button>
+              <button data-k="headAlign" data-v="center">Center</button>
+            </div></div>
+          <div class="field"><label>Headline size</label>
+            <div class="slider-row"><input type="range" data-k="headSize" min="22" max="64"><output></output></div></div>
+          <div class="field"><label>Line height</label>
+            <div class="slider-row"><input type="range" data-k="headLine" min="95" max="140"><output></output></div></div>
+          <div class="field"><label>Letter spacing</label>
+            <div class="slider-row"><input type="range" data-k="headLS" min="-3" max="8" step="0.5"><output></output></div></div>
+        </div>
+
+        <div class="sub-section">
+          <label class="tgl main"><input type="checkbox" data-k="dek">Dek / subheadline</label>
+          <div class="field" style="margin-top:6px"><label>Dek text</label>
+            <textarea data-k="dekText"></textarea></div>
+          <div class="row2">
+            <div class="field"><label>Dek font</label>
+              <select class="fontsel" data-k="dekFont"></select></div>
+            <div class="field"><label>Weight & Style</label>
+              <select class="ws-sel" data-k="dekWS"></select></div>
+          </div>
+          <div class="field"><label>Dek size</label>
+            <div class="slider-row"><input type="range" data-k="dekSize" min="12" max="28"><output></output></div></div>
+          <div class="colors">
+            <div class="color-field"><input type="color" data-k="dekC"><span>Dek text color</span></div>
+          </div>
+          <div class="field"><label>Dek alignment</label>
+            <div class="seg">
+              <button data-k="dekAlign" data-v="left">Left</button>
+              <button data-k="dekAlign" data-v="center">Center</button>
+            </div></div>
+        </div>
+<div class="sub-section">
+          <label class="tgl main"><input type="checkbox" data-k="kicker">Kicker</label>
+          <div class="row2" style="margin-top:6px">
+            <div class="field"><label>Kicker text</label>
+              <input type="text" data-k="kickerText"></div>
+            <div class="field"><label>Kicker style</label>
+              <select data-k="kickerStyle">
+                <option value="text">Plain text</option>
+                <option value="box">Filled box</option>
+                <option value="outline">Outlined box</option>
+              </select></div>
+          </div>
+          <div class="row2">
+            <div class="field"><label>Kicker font</label>
+              <select class="fontsel" data-k="kickerFont"></select></div>
+            <div class="field"><label>Weight & Style</label>
+              <select class="ws-sel" data-k="kickerWS"></select></div>
+          </div>
+          <div class="row2">
+            <div class="field"><label>Case</label>
+              <select data-k="kickerCase">
+                <option value="uppercase">ALL CAPS</option>
+                <option value="none">As typed</option>
+                <option value="capitalize">Title Case</option>
+              </select></div>
+            <div class="field"><label>&nbsp;</label><div></div></div>
+          </div>
+          <div class="colors">
+            <div class="color-field"><input type="color" data-k="kickerBorderC"><span>Box / outline</span></div>
+            <div class="color-field"><input type="color" data-k="kickerTextC"><span>Text color</span></div>
+          </div>
+          <div class="field"><label>Kicker text size</label>
+            <div class="slider-row"><input type="range" data-k="kickerSize" min="10" max="26"><output></output></div></div>
+          <div class="field"><label>Kicker box padding (shape size)</label>
+            <div class="slider-row"><input type="range" data-k="kickerPad" min="2" max="24"><output></output></div></div>
+          <div class="field"><label>Kicker alignment</label>
+            <div class="seg">
+              <button data-k="kickerAlign" data-v="left">Left</button>
+              <button data-k="kickerAlign" data-v="center">Center</button>
+            </div></div>
+          <label class="tgl"><input type="checkbox" data-k="kickerSide">Text next to kicker (e.g. &ldquo;Updated 6 minutes ago&rdquo;)</label>
+          <div class="row2" style="margin-top:6px">
+            <div class="field"><label>Side text</label>
+              <input type="text" data-k="kickerSideText"></div>
+            <div class="field"><label>&nbsp;</label>
+              <div class="colors" style="margin:0"><div class="color-field"><input type="color" data-k="kickerSideC"><span>Side text color</span></div></div></div>
+          </div>
+        </div>
+
+        <div class="sub-section">
+          <label class="tgl main"><input type="checkbox" data-k="breadcrumb">Breadcrumb</label>
+          <div class="field" style="margin-top:6px"><label>Breadcrumb trail</label>
+            <input type="text" data-k="breadcrumbText"></div>
+          <div class="row2">
+            <div class="field"><label>Breadcrumb font</label>
+              <select class="fontsel" data-k="crumbFont"></select></div>
+            <div class="field"><label>Weight & Style</label>
+              <select class="ws-sel" data-k="crumbWS"></select></div>
+          </div>
+          <div class="field"><label>Breadcrumb size</label>
+            <div class="slider-row"><input type="range" data-k="crumbSize" min="10" max="22"><output></output></div></div>
+          <div class="colors">
+            <div class="color-field"><input type="color" data-k="crumbC"><span>Breadcrumb text</span></div>
+          </div>
+          <div class="field"><label>Breadcrumb alignment</label>
+            <div class="seg">
+              <button data-k="crumbAlign" data-v="left">Left</button>
+              <button data-k="crumbAlign" data-v="center">Center</button>
+            </div></div>
+        </div>
+
+              </div>
+    </details>
+
+    <details class="group">
+      <summary>Byline &amp; meta</summary>
+      <div class="g-body">
+        <div class="sub-section">
+          <label class="tgl main"><input type="checkbox" data-k="byline">Byline</label>
+          <div class="row2" style="margin-top:6px">
+            <div class="field"><label>Author</label>
+              <input type="text" data-k="author"></div>
+            <div class="field"><label>Dateline</label>
+              <input type="text" data-k="dateline"></div>
+          </div>
+          <div class="row2">
+            <div class="field"><label>Author font</label>
+              <select class="fontsel" data-k="bylineFont"></select></div>
+            <div class="field"><label>Weight & Style</label>
+              <select class="ws-sel" data-k="bylineWS"></select></div>
+          </div>
+          <div class="row2">
+            <div class="field"><label>Date font</label>
+              <select class="fontsel" data-k="dateFont"></select></div>
+            <div class="field"><label>Weight & Style</label>
+              <select class="ws-sel" data-k="dateWS"></select></div>
+          </div>
+          <div class="colors">
+            <div class="color-field"><input type="color" data-k="muted"><span>Dates / muted text</span></div>
+          </div>
+          <div class="field"><label>Author size</label>
+            <div class="slider-row"><input type="range" data-k="authorSize" min="11" max="22"><output></output></div></div>
+          <div class="field"><label>Date size</label>
+            <div class="slider-row"><input type="range" data-k="bylineSize" min="10" max="20"><output></output></div></div>
+          <div class="field"><label>Byline block alignment</label>
+            <div class="seg">
+              <button data-k="bylineAlign" data-v="flex-start">Left</button>
+              <button data-k="bylineAlign" data-v="center">Center</button>
+            </div></div>
+          <div class="row2">
+            <div class="field"><label>&ldquo;By&rdquo; prefix (matches author font)</label>
+              <select data-k="byPrefix">
+                <option value="none">No prefix</option>
+                <option value="by">By Name</option>
+                <option value="bycolon">By: Name</option>
+              </select></div>
+            <div class="field"><label>Author name</label>
+              <select data-k="authorUnderline">
+                <option value="under">Underlined</option>
+                <option value="plain">No underline</option>
+              </select></div>
+          </div>
+        </div>
+
+        <div class="sub-section">
+          <label class="tgl main"><input type="checkbox" data-k="updated">"Updated" badge</label>
+          <div class="row2" style="margin-top:6px">
+            <div class="field"><label>Time ago number</label>
+              <input type="number" data-k="updatedNum" min="0"></div>
+            <div class="field"><label>Unit</label>
+              <select data-k="updatedUnit">
+                <option value="seconds">Seconds</option>
+                <option value="minutes">Minutes</option>
+                <option value="hours">Hours</option>
+                <option value="days">Days</option>
+                <option value="weeks">Weeks</option>
+                <option value="months">Months</option>
+                <option value="years">Years</option>
+              </select></div>
+          </div>
+          <div class="row2">
+            <div class="field"><label>Updated font</label>
+              <select class="fontsel" data-k="updatedFont"></select></div>
+            <div class="field"><label>Weight & Style</label>
+              <select class="ws-sel" data-k="updatedWS"></select></div>
+          </div>
+          <div class="field"><label>Badge size</label>
+            <div class="slider-row"><input type="range" data-k="updatedSize" min="10" max="20"><output></output></div></div>
+          <div class="colors">
+            <div class="color-field"><input type="color" data-k="updatedDotC"><span>Dot</span></div>
+            <div class="color-field"><input type="color" data-k="updatedTextC"><span>Text color</span></div>
+          </div>
+          <div class="field"><label>Badge alignment</label>
+            <div class="seg">
+              <button data-k="updatedAlign" data-v="flex-start">Left</button>
+              <button data-k="updatedAlign" data-v="center">Center</button>
+            </div></div>
+          <div class="field"><label>Badge position</label>
+            <div class="seg">
+              <button data-k="updatedPos" data-v="byline">Below byline</button>
+              <button data-k="updatedPos" data-v="rule">Below bottom rule</button>
+            </div></div>
+        </div>
+
+        <div class="sub-section">
+          <label class="tgl"><input type="checkbox" data-k="tag">Tag chip</label>
+          <div class="row2" style="margin-top:6px">
+            <div class="field"><label>Tag label</label>
+              <input type="text" data-k="tagText"></div>
+            <div class="field"><label>Style</label>
+              <select data-k="tagStyle">
+                <option value="text">Plain text</option>
+                <option value="box">Filled box</option>
+                <option value="outline">Outlined box</option>
+              </select></div>
+          </div>
+          <div class="row2">
+            <div class="field"><label>Tag font</label>
+              <select class="fontsel" data-k="tagFont"></select></div>
+            <div class="field"><label>Weight & Style</label>
+              <select class="ws-sel" data-k="tagWS"></select></div>
+          </div>
+          <div class="field"><label>Tag size</label>
+            <div class="slider-row"><input type="range" data-k="tagSize" min="10" max="20"><output></output></div></div>
+          <div class="colors">
+            <div class="color-field"><input type="color" data-k="tagBorderC"><span>Box / outline</span></div>
+            <div class="color-field"><input type="color" data-k="tagTextC"><span>Text</span></div>
+          </div>
+          <label class="tgl"><input type="checkbox" data-k="tagSide">Text next to tag (share button moves below)</label>
+          <div class="row2" style="margin-top:6px">
+            <div class="field"><label>Side text</label>
+              <input type="text" data-k="tagSideText"></div>
+            <div class="field"><label>&nbsp;</label>
+              <div class="colors" style="margin:0"><div class="color-field"><input type="color" data-k="tagSideC"><span>Side text color</span></div></div></div>
+          </div>
+        </div>
+
+        <div class="sub-section">
+          <label class="tgl"><input type="checkbox" data-k="share">Share button</label>
+          <div class="row2" style="margin-top:6px">
+            <div class="field"><label>Button text</label>
+              <input type="text" data-k="shareText"></div>
+            <div class="field"><label>Icon</label>
+              <select data-k="shareIcon">
+                <option value="nodes">Share nodes</option>
+                <option value="ios">Arrow-up box</option>
+                <option value="link">Link</option>
+                <option value="plane">Paper plane</option>
+                <option value="none">No icon</option>
+              </select></div>
+          </div>
+          <div class="row2">
+            <div class="field"><label>Share font</label>
+              <select class="fontsel" data-k="shareFont"></select></div>
+            <div class="field"><label>Weight & Style</label>
+              <select class="ws-sel" data-k="shareWS"></select></div>
+          </div>
+          <div class="row2">
+            <div class="field"><label>Container shape</label>
+              <select data-k="shareRadius">
+                <option value="8px">Rounded</option>
+                <option value="20px">Pill box</option>
+                <option value="0px">Sharp square</option>
+              </select></div>
+            <div class="field"><label>Button size</label>
+              <div class="slider-row"><input type="range" data-k="shareSize" min="10" max="20"><output></output></div></div>
+          </div>
+          <div class="colors">
+            <div class="color-field"><input type="color" data-k="shareC"><span>Share button color</span></div>
+          </div>
+        </div>
+      </div>
+    </details>
+
+    <details class="group">
+      <summary>Body, Rules & Footer</summary>
+      <div class="g-body">
+        <div class="sub-section">
+          <h4>Divider Rules</h4>
+          <div class="toggles">
+            <label class="tgl"><input type="checkbox" data-k="ruleTop">Top rule (above byline)</label>
+            <label class="tgl"><input type="checkbox" data-k="ruleBottom">Bottom rule (above body)</label>
+          </div>
+          <div class="row2">
+            <div class="field"><label>Style</label>
+              <select data-k="ruleStyle">
+                <option value="solid">Solid full width</option>
+                <option value="dashed">Dashed full width</option>
+                <option value="dotted">Dotted full width</option>
+                <option value="short">Short solid centered</option>
+                <option value="dots">Three dots centered</option>
+              </select></div>
+            <div class="field"><label>&nbsp;</label>
+              <div class="colors" style="margin:0"><div class="color-field"><input type="color" data-k="ruleC"><span>Color</span></div></div></div>
+          </div>
+          <div class="field"><label>Thickness (for lines)</label>
+            <div class="slider-row"><input type="range" data-k="ruleWeight" min="1" max="10"><output></output></div></div>
+        </div>
+
+        <div class="sub-section">
+          <label class="tgl main"><input type="checkbox" data-k="image">Images</label>
+          <div id="imgList" style="margin-top:8px"></div>
+          <button type="button" class="chip" id="imgAdd">&#43; Add image</button>
+          <div class="field" style="margin-top:8px"><label>Uploaded photos stay on your device. Each image has its own shape, placement, and caption.</label></div>
+        </div>
+
+        <div class="sub-section">
+          <label class="tgl main"><input type="checkbox" data-k="body">Body text</label>
+          <div class="field" style="margin-top:6px"><label>Body text (blank line = new paragraph)</label>
+            <textarea data-k="bodyText" style="min-height:90px"></textarea></div>
+          <div class="field">
+            <label class="tgl"><input type="checkbox" data-k="bodyRich">Use rich text (bold, italic, lists)</label>
+            <button type="button" class="chip" id="rtOpen" style="margin-top:6px">Open rich text editor&hellip;</button>
+          </div>
+          <div class="row2">
+            <div class="field"><label>Body font</label>
+              <select class="fontsel" data-k="bodyFont"></select></div>
+            <div class="field"><label>Weight & Style</label>
+              <select class="ws-sel" data-k="bodyWS"></select></div>
+          </div>
+          <div class="field"><label>Body text size</label>
+            <div class="slider-row"><input type="range" data-k="bodySize" min="12" max="24"><output></output></div></div>
+          <div class="field"><label>Body line height</label>
+            <div class="slider-row"><input type="range" data-k="bodyLine" min="120" max="220"><output></output></div></div>
+          <label class="tgl"><input type="checkbox" data-k="dropCap">Drop cap on first paragraph</label>
+          <div class="colors">
+            <div class="color-field"><input type="color" data-k="text"><span>Body text</span></div>
+          </div>
+        </div>
+        
+        <div class="sub-section">
+          <label class="tgl main"><input type="checkbox" data-k="footer">Footer marker</label>
+          <div class="field" style="margin-top:6px"><label>Footer text</label>
+            <input type="text" data-k="footerText"></div>
+          <div class="row2">
+            <div class="field"><label>Footer font</label>
+              <select class="fontsel" data-k="footerFont"></select></div>
+            <div class="field"><label>Weight & Style</label>
+              <select class="ws-sel" data-k="footerWS"></select></div>
+          </div>
+          <div class="field"><label>Footer text size</label>
+            <div class="slider-row"><input type="range" data-k="footerSize" min="8" max="18"><output></output></div></div>
+          <div class="field"><label>Alignment</label>
+            <div class="seg">
+              <button data-k="footerAlign" data-v="left">Left</button>
+              <button data-k="footerAlign" data-v="center">Center</button>
+            </div></div>
+          <div class="colors">
+            <div class="color-field"><input type="color" data-k="footerC"><span>Footer color</span></div>
+          </div>
+        </div>
+      </div>
+    </details>
+
+    <details class="group">
+      <summary>Vertical Spacing</summary>
+      <div class="g-body">
+        <div class="field"><label>Space below Breadcrumb</label>
+          <div class="slider-row"><input type="range" data-k="spCrumb" min="0" max="40"><output></output></div></div>
+        <div class="field"><label>Space below Kicker</label>
+          <div class="slider-row"><input type="range" data-k="spKicker" min="0" max="40"><output></output></div></div>
+        <div class="field"><label>Space below Headline</label>
+          <div class="slider-row"><input type="range" data-k="spHead" min="0" max="40"><output></output></div></div>
+        <div class="field"><label>Space below Dek</label>
+          <div class="slider-row"><input type="range" data-k="spDek" min="0" max="60"><output></output></div></div>
+        <div class="field"><label>Space above/below Top Divider</label>
+          <div class="slider-row"><input type="range" data-k="spDivTop" min="0" max="40"><output></output></div></div>
+        <div class="field"><label>Space below Byline block</label>
+          <div class="slider-row"><input type="range" data-k="spByline" min="0" max="40"><output></output></div></div>
+        <div class="field"><label>Space below Updated Time</label>
+          <div class="slider-row"><input type="range" data-k="spUpd" min="0" max="40"><output></output></div></div>
+        <div class="field"><label>Space below Tag/Share row</label>
+          <div class="slider-row"><input type="range" data-k="spMeta" min="0" max="40"><output></output></div></div>
+        <div class="field"><label>Space above Image (photo &harr; text gap)</label>
+          <div class="slider-row"><input type="range" data-k="spImgTop" min="0" max="60"><output></output></div></div>
+        <div class="field"><label>Space below Image/Caption</label>
+          <div class="slider-row"><input type="range" data-k="spImg" min="0" max="60"><output></output></div></div>
+        <div class="field"><label>Space between Paragraphs</label>
+          <div class="slider-row"><input type="range" data-k="spP" min="0" max="40"><output></output></div></div>
+        <div class="field"><label>Space above/below Bottom Divider</label>
+          <div class="slider-row"><input type="range" data-k="spDivBot" min="0" max="40"><output></output></div></div>
+      </div>
+    </details>
+  </aside>
+  
+  <button id="scrollTopBtn" title="Back to top">&#8593;</button>
+</main>
+
+<button class="btn primary" id="exitClean">Exit clean view</button>
+
+<div id="previewBar">
+  <span class="pv-label" id="pvLabel">Wide</span>
+  <button class="btn small" id="pvOut" title="Zoom out">&minus;</button>
+  <button class="btn small" id="pvIn" title="Zoom in">&#43;</button>
+  <button class="btn small" id="pvFit" title="Fit to screen">Fit</button>
+  <button class="btn primary small" id="pvExit">Exit preview</button>
+</div>
+
+<div id="rtModal" role="dialog" aria-modal="true" aria-label="Rich text editor">
+  <div class="rt-box">
+    <div class="rt-bar">
+      <button type="button" data-cmd="bold" title="Bold"><b>B</b></button>
+      <button type="button" data-cmd="italic" title="Italic"><i>I</i></button>
+      <button type="button" data-cmd="underline" title="Underline"><u>U</u></button>
+      <button type="button" data-cmd="insertUnorderedList" title="Bullet list">&bull; List</button>
+      <button type="button" data-cmd="insertOrderedList" title="Numbered list">1. List</button>
+      <button type="button" data-cmd="removeFormat" title="Clear formatting">Clear</button>
+    </div>
+    <div id="rtArea" contenteditable="true" spellcheck="true"></div>
+    <div class="rt-hint">Select text, then use the buttons above. Applying turns on rich text for the body copy; the plain box in the panel is ignored while rich text is on.</div>
+    <div class="em-row">
+      <button class="btn small" id="rtCancel" type="button">Cancel</button>
+      <button class="btn primary small" id="rtDone" type="button">Apply to mockup</button>
+    </div>
+  </div>
+</div>
+<div id="toast" role="status" aria-live="polite"></div>
+<div id="exportModal" role="dialog" aria-modal="true" aria-label="Exported image">
+  <div class="em-box">
+    <img id="emImg" alt="Exported mockup">
+    <div class="em-hint">On a phone: press and hold the image and choose &ldquo;Add to Photos&rdquo;, or tap Share. On a computer, tap Download.</div>
+    <div class="em-row">
+      <button class="btn small" id="emShare" type="button">Share&hellip;</button>
+      <button class="btn small" id="emCopy" type="button">Copy</button>
+      <button class="btn small" id="emDownload" type="button">Download</button>
+      <button class="btn primary small" id="emClose" type="button">Done</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const wsOptions = [
+  {v:"100 normal", l:"Thin"}, {v:"100 italic", l:"Thin Italic"},
+  {v:"300 normal", l:"Light"}, {v:"300 italic", l:"Light Italic"},
+  {v:"400 normal", l:"Regular"}, {v:"400 italic", l:"Regular Italic"},
+  {v:"500 normal", l:"Medium"}, {v:"500 italic", l:"Medium Italic"},
+  {v:"600 normal", l:"Semibold"}, {v:"600 italic", l:"Semibold Italic"},
+  {v:"700 normal", l:"Bold"}, {v:"700 italic", l:"Bold Italic"},
+  {v:"800 normal", l:"Extra Bold"}, {v:"800 italic", l:"Extra Bold Italic"},
+  {v:"900 normal", l:"Black"}, {v:"900 italic", l:"Black Italic"}
+];
+document.querySelectorAll('select.ws-sel').forEach(sel => {
+  wsOptions.forEach(o => {
+    const opt = document.createElement('option'); opt.value = o.v; opt.textContent = o.l; sel.appendChild(opt);
+  });
+});
+
+const d = new Date();
+const currentDateline = d.toLocaleDateString('en-US', {month:'long', day:'numeric', year:'numeric'}) + ' / ' + d.toLocaleTimeString('en-US', {hour:'numeric', minute:'2-digit'}) + ' / Metro Desk';
+
+let state = {
+  theme:'network', cardW:420, radius:0, bg:'#ffffff',
+  alignAll:'left', kickerAlign:'left', headAlign:'left', dekAlign:'left', bylineAlign:'flex-start', updatedAlign:'flex-start', crumbAlign:'left',
+  crumbSize:13, kickerSize:12.5, dekSize:16, authorSize:14.5, bylineSize:13.5, updatedSize:13, tagSize:12.5, bodySize:16, shareSize:13, logoFontSize:13.6, tabSize:14, mastBtnSize:12.5, footerSize:10,
+  url:'www.npn-news.example',
+  outlet:'NPN NEWS', mastFont:"'Archivo'", mastWS:"800 normal", mastSize:22, mastH:58, mastAlign:'center', mastLine:true, mastBtnText:'Sign in', mastBtnFont:"'Inter'", mastBtnWS:"600 normal", mastBtnRadius:'4px',
+  mastBg:'#ffffff', outletC:'#141414', iconC:'#26282c', subC:'#c8102e',
+  hiconOrder:['bell','account','search','btn'],
+  logoShape:'circle', logoText:'NPN', logoIcon:'none',
+  logoBg:'#141414', logoFg:'#ffffff', logoFont:"'Archivo'", logoWS:"800 normal", logoSize:34, logoIconSize:45, logoImg:'',
+  tabsText:'Popular, Camera news, Camera rumors', tabsStyle:'text', tabPad:13, tabFont:"'Inter'", tabWS:"600 normal",
+  tabBg:'#f2f2f2', tabActiveC:'#c8102e', tabTextC:'#333333',
+  ruleStyle:'solid', ruleWeight:1, ruleC:'#e4e2dc',
+  breadcrumbText:'News > Local > City Hall', crumbC:'#c8102e', crumbFont:"'Inter'", crumbWS:"500 normal",
+  kickerText:'Getting Answers', kickerStyle:'text', kickerCase:'uppercase', kickerPad:7, kickerBorderC:'#c8102e', kickerTextC:'#c8102e', kickerFont:"'Inter'", kickerWS:"700 normal",
+  headline:'Regional transit authority approves late-night service expansion after year-long pilot',
+  headFont:"'Archivo'", headWS:"800 normal", headCase:'none', headSize:34, headLine:116, headLS:-0.5, ink:'#141414',
+  dekText:'Officials say ridership on the pilot routes exceeded projections by 40 percent, prompting a permanent rollout across all five lines.',
+  dekC:'#6a6c70', dekFont:"'Inter'", dekWS:"400 normal",
+  author:'Jordan Ellison', dateline:currentDateline, byPrefix:'by', authorUnderline:'under',
+  bylineFont:"'Inter'", bylineWS:"600 normal", dateFont:"'Inter'", dateWS:"400 normal",
+  updatedNum:'26', updatedUnit:'minutes', updatedDotC:'#c8102e', updatedTextC:'#c8102e', updatedFont:"'Inter'", updatedWS:"600 normal", updatedPos:'byline',
+  kickerSideText:'Updated 6 minutes ago', kickerSideC:'#c8102e',
+  tagSideText:'Updated 6 minutes ago', tagSideC:'#c8102e',
+  tagText:'News', tagStyle:'box', tagBorderC:'#33507a', tagTextC:'#ffffff', tagFont:"'Inter'", tagWS:"600 normal", shareC:'#141414', shareText:'Share', shareIcon:'nodes', shareFont:"'Inter'", shareWS:"600 normal", shareRadius:'8px', muted:'#6a6c70',
+  images:[
+    {src:'', ratio:'16 / 10', corner:'0px', pos:'above', caption:'The downtown interchange at rush hour. (Staff photo)', showCaption:false, posX:50, posY:50, zoom:100}
+  ],
+  bodyText:'The vote came after nearly two hours of public comment, with most speakers backing the expansion. Board members cited the pilot\u2019s ridership numbers as the deciding factor.\n\nService on the extended schedule begins the first week of September, with new timetables posted at stations later this month.',
+  bodyFont:"'Inter'", bodyWS:"400 normal", text:'#26282c', bodyRich:false, bodyHtml:'', bodyLine:162, dropCap:false,
+  footerText:'MOCKUP', footerFont:"'Inter'", footerWS:"600 normal", footerAlign:'center', footerC:'#9a9a94',
+  spCrumb:16, spKicker:13, spHead:14, spDek:18, spDivTop:18, spByline:14, spUpd:14, spMeta:16, spImgTop:0, spImg:20, spP:14, spDivBot:18,
+  show:{
+    browser:true, masthead:true, hamburger:true, hsearch:true, hbell:false, haccount:false, mastBtn:false,
+    logo:true, tabs:false, breadcrumb:false, kicker:true, kickerSide:false, dek:false,
+    byline:true, updated:false, tag:false, tagSide:false, share:false,
+    image:false, body:false, ruleTop:true, ruleBottom:true, footer:false
+  }
+};
+const DEFAULT_STATE = JSON.parse(JSON.stringify(state));
+
+/* ---------- undo / redo history ---------- */
+const HIST_MAX = 60;
+let histPast = [], histFuture = [], histLast = null, histTimer = null;
+function histSnap(){ return JSON.stringify(state); }
+function commitNow(){
+  clearTimeout(histTimer); histTimer = null;
+  const cur = histSnap();
+  if(histLast === null){ histLast = cur; updateHistBtns(); return; }
+  if(cur === histLast) return;
+  histPast.push(histLast);
+  if(histPast.length > HIST_MAX) histPast.shift();
+  histFuture = [];
+  histLast = cur;
+  updateHistBtns();
+}
+function commit(immediate){
+  clearTimeout(histTimer);
+  if(immediate) commitNow();
+  else histTimer = setTimeout(commitNow, 350);
+}
+function undo(){
+  commitNow();
+  if(!histPast.length) return;
+  histFuture.push(histLast);
+  histLast = histPast.pop();
+  state = JSON.parse(histLast);
+  syncControls(); render(); updateHistBtns();
+}
+function redo(){
+  commitNow();
+  if(!histFuture.length) return;
+  histPast.push(histLast);
+  histLast = histFuture.pop();
+  state = JSON.parse(histLast);
+  syncControls(); render(); updateHistBtns();
+}
+function updateHistBtns(){
+  document.getElementById('undoBtn').disabled = !histPast.length;
+  document.getElementById('redoBtn').disabled = !histFuture.length;
+}
+document.getElementById('undoBtn').onclick = undo;
+document.getElementById('redoBtn').onclick = redo;
+document.addEventListener('keydown', e=>{
+  if(!(e.ctrlKey || e.metaKey)) return;
+  const t = e.target;
+  const typing = t && ((t.tagName === 'INPUT' && (t.type === 'text' || t.type === 'number')) || t.tagName === 'TEXTAREA' || t.isContentEditable);
+  if(typing) return; /* let native text-field undo work */
+  const k = e.key.toLowerCase();
+  if(k === 'z'){ e.preventDefault(); e.shiftKey ? redo() : undo(); }
+  else if(k === 'y'){ e.preventDefault(); redo(); }
+});
+
+const FONTS = [
+  ["'Playfair Display'","Playfair Display — sharp serif"],
+  ["'Lora'","Lora — literary serif"],
+  ["'Source Serif 4'","Source Serif — news serif"],
+  ["'Merriweather'","Merriweather — screen serif"],
+  ["'PT Serif'","PT Serif — sturdy serif"],
+  ["'Newsreader'","Newsreader — editorial serif"],
+  ["'Bitter'","Bitter — contemporary serif"],
+  ["'EB Garamond'","EB Garamond — classic serif"],
+  ["'Crimson Pro'","Crimson Pro — bookish serif"],
+  ["'Domine'","Domine — headline serif"],
+  ["'Spectral'","Spectral — refined serif"],
+  ["'Fraunces'","Fraunces — soft display serif"],
+  ["'Libre Caslon Text'","Libre Caslon — old-style serif"],
+  ["'Old Standard TT'","Old Standard — vintage serif"],
+  ["'Roboto Slab'","Roboto Slab — slab serif"],
+  ["Georgia","Georgia — system serif"],
+  ["'Times New Roman', Times","Times New Roman — system serif"],
+  ["'Inter'","Inter — neutral sans"],
+  ["'Archivo'","Archivo — grotesque sans"],
+  ["'IBM Plex Sans'","IBM Plex Sans"],
+  ["'Public Sans'","Public Sans"],
+  ["'Libre Franklin'","Libre Franklin — news sans"],
+  ["'Work Sans'","Work Sans — friendly sans"],
+  ["'DM Sans'","DM Sans — geometric sans"],
+  ["'Barlow'","Barlow — clean grotesque"],
+  ["'Montserrat'","Montserrat — geometric sans"],
+  ["'Poppins'","Poppins — rounded geometric"],
+  ["'Karla'","Karla — quirky sans"],
+  ["'Rubik'","Rubik — rounded sans"],
+  ["'Manrope'","Manrope — modern sans"],
+  ["'Space Grotesk'","Space Grotesk — techy"],
+  ["'Oswald'","Oswald — condensed"],
+  ["'Barlow Condensed'","Barlow Condensed — narrow sans"],
+  ["'Anton'","Anton — tabloid block"],
+  ["'Bebas Neue'","Bebas Neue — poster caps"],
+  ["'Abril Fatface'","Abril Fatface — fat display"],
+  ["'Courier Prime'","Courier Prime — typewriter"],
+  ["Arial","Arial — system sans"],
+  ["Verdana","Verdana — system sans"]
+];
+
+const THEMES = {
+  broadsheet:{label:'Broadsheet', patch:{
+    headFont:"'Playfair Display'", bodyFont:"'Lora'", kickerFont:"'Lora'", dekFont:"'Lora'", crumbFont:"'Lora'", tagFont:"'Lora'", shareFont:"'Lora'", tabFont:"'Lora'", mastBtnFont:"'Lora'", bylineFont:"'Lora'", dateFont:"'Lora'", updatedFont:"'Lora'", footerFont:"'Lora'",
+    headWS:'800 normal', bodyWS:'400 normal', dekWS:'400 normal', bylineWS:'700 normal',
+    mastBtnRadius:'0px', tabSize:14, shareRadius:'0px', headCase:'none', headSize:36, headLine:112,
+    alignAll:'left', kickerAlign:'left', headAlign:'left', dekAlign:'left', bylineAlign:'flex-start', updatedAlign:'flex-start', crumbAlign:'left', radius:0,
+    bg:'#fdfcf9', ink:'#1c1a17', text:'#33312d', muted:'#6e6a62',
+    outletC:'#1c1a17', iconC:'#33312d', mastFont:"'Playfair Display'", mastBg:'#fdfcf9', mastSize:27, mastH:62, mastAlign:'center', mastLine:true, ruleStyle:'solid',
+    tabBg:'#f1efe8', tabActiveC:'#1c1a17', tabTextC:'#6e6a62', tabsStyle:'text', tabPad:13,
+    logoShape:'nobox', logoFont:"'Playfair Display'", logoBg:'#1c1a17', logoFg:'#1c1a17', logoFontSize:22,
+    kickerBorderC:'#1c1a17', kickerTextC:'#1c1a17', kickerStyle:'text', crumbC:'#6e6a62', dekC:'#6e6a62', ruleC:'#1c1a17',
+    subC:'#1c1a17', tagBorderC:'#1c1a17', tagTextC:'#1c1a17', tagStyle:'outline', shareC:'#1c1a17', shareText:'Share', shareIcon:'nodes', updatedDotC:'#9a3b2e', updatedTextC:'#9a3b2e',
+    show:{browser:false, masthead:true, hamburger:true, hsearch:true, hbell:false, haccount:false, mastBtn:false, logo:false, tabs:false, breadcrumb:false, kicker:true, dek:true, byline:true, updated:false, tag:false, share:false, image:false, caption:false, body:true, ruleTop:true, ruleBottom:true, footer:false}}},
+  network:{label:'Network', patch:{
+    headFont:"'Archivo'", bodyFont:"'Inter'", kickerFont:"'Inter'", dekFont:"'Inter'", crumbFont:"'Inter'", tagFont:"'Inter'", shareFont:"'Inter'", tabFont:"'Inter'", mastBtnFont:"'Inter'", bylineFont:"'Inter'", dateFont:"'Inter'", updatedFont:"'Inter'", footerFont:"'Inter'",
+    headWS:'800 normal', bodyWS:'400 normal', dekWS:'400 normal', bylineWS:'600 normal',
+    mastBtnRadius:'4px', tabSize:14, shareRadius:'8px', headCase:'none', headSize:34, headLine:116,
+    alignAll:'left', kickerAlign:'left', headAlign:'left', dekAlign:'left', bylineAlign:'flex-start', updatedAlign:'flex-start', crumbAlign:'left', radius:0,
+    bg:'#ffffff', ink:'#141414', text:'#26282c', muted:'#6a6c70',
+    outletC:'#141414', iconC:'#26282c', mastFont:"'Archivo'", mastBg:'#ffffff', mastSize:22, mastH:58, mastAlign:'center', mastLine:true, ruleStyle:'solid',
+    tabBg:'#f2f2f2', tabActiveC:'#c8102e', tabTextC:'#333333', tabsStyle:'text', tabPad:13,
+    logoShape:'circle', logoFont:"'Archivo'", logoBg:'#141414', logoFg:'#ffffff', logoFontSize:13.6,
+    kickerBorderC:'#c8102e', kickerTextC:'#c8102e', kickerStyle:'text', crumbC:'#c8102e', dekC:'#6a6c70', ruleC:'#e4e2dc',
+    subC:'#c8102e', tagBorderC:'#c8102e', tagTextC:'#ffffff', tagStyle:'box', shareC:'#141414', shareText:'Share', shareIcon:'nodes', updatedDotC:'#c8102e', updatedTextC:'#c8102e',
+    show:{browser:true, masthead:true, hamburger:true, hsearch:true, hbell:false, haccount:false, mastBtn:false, logo:true, tabs:false, breadcrumb:false, kicker:true, dek:false, byline:true, updated:false, tag:false, share:false, image:false, caption:false, body:false, ruleTop:true, ruleBottom:true, footer:false}}},
+  digital:{label:'Digital / Tech', patch:{
+    headFont:"'IBM Plex Sans'", bodyFont:"'IBM Plex Sans'", kickerFont:"'IBM Plex Sans'", dekFont:"'IBM Plex Sans'", crumbFont:"'IBM Plex Sans'", tagFont:"'IBM Plex Sans'", shareFont:"'IBM Plex Sans'", tabFont:"'IBM Plex Sans'", mastBtnFont:"'IBM Plex Sans'", bylineFont:"'IBM Plex Sans'", dateFont:"'IBM Plex Sans'", updatedFont:"'IBM Plex Sans'", footerFont:"'IBM Plex Sans'",
+    headWS:'600 normal', bodyWS:'400 normal', dekWS:'400 normal', bylineWS:'600 normal',
+    mastBtnRadius:'4px', tabSize:14, shareRadius:'8px', headCase:'none', headSize:33, headLine:122,
+    alignAll:'left', kickerAlign:'left', headAlign:'left', dekAlign:'left', bylineAlign:'flex-start', updatedAlign:'flex-start', crumbAlign:'left', radius:0,
+    bg:'#ffffff', ink:'#2d3238', text:'#3a3f45', muted:'#7d838a',
+    outletC:'#2d3238', iconC:'#2d3238', mastFont:"'IBM Plex Sans'", mastBg:'#d7ecf3', mastSize:20, mastH:56, mastAlign:'flex-start', mastLine:false, ruleStyle:'dashed',
+    tabBg:'#e8e7e5', tabActiveC:'#2a7dbf', tabTextC:'#2d3238', tabsStyle:'underline', tabPad:11,
+    logoShape:'rounded', logoFont:"'IBM Plex Sans'", logoBg:'#2d3238', logoFg:'#ffffff', logoFontSize:13,
+    kickerBorderC:'#2a7dbf', kickerTextC:'#2a7dbf', kickerStyle:'text', crumbC:'#2a7dbf', dekC:'#7d838a', ruleC:'#e4e2dc',
+    subC:'#2a7dbf', tagBorderC:'#33507a', tagTextC:'#ffffff', tagStyle:'box', shareC:'#2d3238', shareText:'Share', shareIcon:'ios', updatedDotC:'#2a7dbf', updatedTextC:'#2a7dbf',
+    show:{browser:false, masthead:true, hamburger:true, hsearch:true, hbell:true, haccount:true, mastBtn:false, logo:true, tabs:true, breadcrumb:true, kicker:false, dek:false, byline:true, updated:false, tag:true, share:false, image:false, caption:false, body:false, ruleTop:false, ruleBottom:false, footer:false}}},
+  minimal:{label:'Minimal', patch:{
+    headFont:"'Space Grotesk'", bodyFont:"'Inter'", kickerFont:"'Inter'", dekFont:"'Inter'", crumbFont:"'Inter'", tagFont:"'Inter'", shareFont:"'Inter'", tabFont:"'Inter'", mastBtnFont:"'Inter'", bylineFont:"'Inter'", dateFont:"'Inter'", updatedFont:"'Inter'", footerFont:"'Inter'",
+    headWS:'600 normal', bodyWS:'400 normal', dekWS:'400 normal', bylineWS:'600 normal',
+    mastBtnRadius:'20px', tabSize:14, shareRadius:'20px', headCase:'none', headSize:32, headLine:120,
+    alignAll:'center', kickerAlign:'center', headAlign:'center', dekAlign:'center', bylineAlign:'center', updatedAlign:'center', crumbAlign:'center', radius:16,
+    bg:'#fafafa', ink:'#191919', text:'#3c3c3c', muted:'#8a8a8a',
+    outletC:'#191919', iconC:'#3c3c3c', mastFont:"'Space Grotesk'", mastBg:'#fafafa', mastSize:18, mastH:54, mastAlign:'center', mastLine:false, ruleStyle:'dots',
+    tabBg:'#f0f0f0', tabActiveC:'#191919', tabTextC:'#8a8a8a', tabsStyle:'pill', tabPad:12,
+    logoShape:'circle', logoFont:"'Space Grotesk'", logoBg:'#191919', logoFg:'#fafafa', logoFontSize:12,
+    kickerBorderC:'#3d3d3d', kickerTextC:'#3d3d3d', kickerStyle:'outline', crumbC:'#8a8a8a', dekC:'#8a8a8a', ruleC:'#e0e0e0',
+    subC:'#191919', tagBorderC:'#191919', tagTextC:'#191919', tagStyle:'outline', shareC:'#191919', shareText:'Share', shareIcon:'link', updatedDotC:'#b04632', updatedTextC:'#b04632',
+    show:{browser:false, masthead:true, hamburger:false, hsearch:true, hbell:false, haccount:false, mastBtn:true, logo:false, tabs:false, breadcrumb:false, kicker:true, dek:true, byline:true, updated:false, tag:false, share:false, image:false, caption:false, body:false, ruleTop:false, ruleBottom:true, footer:false}}},
+  tabloid:{label:'Tabloid', patch:{
+    headFont:"'Anton'", bodyFont:"'Inter'", kickerFont:"'Inter'", dekFont:"'Inter'", crumbFont:"'Inter'", tagFont:"'Inter'", shareFont:"'Inter'", tabFont:"'Inter'", mastBtnFont:"'Inter'", bylineFont:"'Inter'", dateFont:"'Inter'", updatedFont:"'Inter'", footerFont:"'Inter'",
+    headWS:'400 normal', bodyWS:'400 normal', dekWS:'400 normal', bylineWS:'700 normal',
+    mastBtnRadius:'0px', tabSize:14, shareRadius:'0px', headCase:'uppercase', headSize:44, headLine:105,
+    alignAll:'left', kickerAlign:'left', headAlign:'left', dekAlign:'left', bylineAlign:'flex-start', updatedAlign:'flex-start', crumbAlign:'left', radius:0,
+    bg:'#ffffff', ink:'#000000', text:'#111111', muted:'#555555',
+    outletC:'#e31818', iconC:'#000000', mastFont:"'Anton'", mastBg:'#ffffff', mastSize:32, mastH:64, mastAlign:'flex-start', mastLine:true, ruleStyle:'solid', ruleWeight:4,
+    tabBg:'#000000', tabActiveC:'#e31818', tabTextC:'#ffffff', tabsStyle:'text', tabPad:12,
+    logoShape:'square', logoFont:"'Anton'", logoBg:'#e31818', logoFg:'#ffffff', logoFontSize:18,
+    kickerBorderC:'#e31818', kickerTextC:'#ffffff', kickerStyle:'box', crumbC:'#e31818', dekC:'#000000', ruleC:'#000000',
+    subC:'#e31818', tagBorderC:'#000000', tagTextC:'#ffffff', tagStyle:'box', shareC:'#000000', shareText:'Share', shareIcon:'plane', updatedDotC:'#e31818', updatedTextC:'#e31818',
+    show:{browser:true, masthead:true, hamburger:true, hsearch:true, hbell:false, haccount:false, mastBtn:false, logo:true, tabs:true, breadcrumb:false, kicker:true, dek:true, byline:true, updated:false, tag:false, share:false, image:false, caption:false, body:true, ruleTop:true, ruleBottom:true, footer:false}}},
+  business:{label:'Business News', patch:{
+    headFont:"Georgia", bodyFont:"Georgia", kickerFont:"Georgia", dekFont:"Georgia", crumbFont:"Georgia", tagFont:"Georgia", shareFont:"Georgia", tabFont:"Georgia", mastBtnFont:"Georgia", bylineFont:"Georgia", dateFont:"Georgia", updatedFont:"Georgia", footerFont:"Georgia",
+    headWS:'700 normal', bodyWS:'400 normal', dekWS:'400 normal', bylineWS:'700 normal',
+    mastBtnRadius:'4px', tabSize:14, shareRadius:'4px', headCase:'none', headSize:32, headLine:125,
+    alignAll:'left', kickerAlign:'left', headAlign:'left', dekAlign:'left', bylineAlign:'flex-start', updatedAlign:'flex-start', crumbAlign:'left', radius:0,
+    bg:'#f7f6f2', ink:'#1c2b36', text:'#333333', muted:'#666666',
+    outletC:'#1c2b36', iconC:'#1c2b36', mastFont:"Georgia", mastBg:'#ffffff', mastSize:24, mastH:60, mastAlign:'center', mastLine:true, ruleStyle:'short', ruleWeight:2,
+    tabBg:'#e2dfd8', tabActiveC:'#1c2b36', tabTextC:'#555555', tabsStyle:'text', tabPad:10,
+    logoShape:'nobox', logoFont:"Georgia", logoBg:'#1c2b36', logoFg:'#1c2b36', logoFontSize:24,
+    kickerBorderC:'#8b1c1c', kickerTextC:'#8b1c1c', kickerStyle:'text', crumbC:'#666666', dekC:'#444444', ruleC:'#cccccc',
+    subC:'#1c2b36', tagBorderC:'#1c2b36', tagTextC:'#1c2b36', tagStyle:'outline', shareC:'#1c2b36', shareText:'Share', shareIcon:'nodes', updatedDotC:'#8b1c1c', updatedTextC:'#8b1c1c',
+    show:{browser:false, masthead:true, hamburger:true, hsearch:true, hbell:true, haccount:false, mastBtn:true, logo:false, tabs:true, breadcrumb:false, kicker:false, dek:true, byline:true, updated:true, tag:true, share:true, image:false, caption:false, body:true, ruleTop:true, ruleBottom:true, footer:false}}},
+  indie:{label:'Indie Mag', patch:{
+    headFont:"'Space Grotesk'", bodyFont:"'Archivo'", kickerFont:"'Archivo'", dekFont:"'Archivo'", crumbFont:"'Archivo'", tagFont:"'Archivo'", shareFont:"'Archivo'", tabFont:"'Archivo'", mastBtnFont:"'Archivo'", bylineFont:"'Archivo'", dateFont:"'Archivo'", updatedFont:"'Archivo'", footerFont:"'Archivo'",
+    headWS:'700 normal', bodyWS:'400 normal', dekWS:'400 normal', bylineWS:'700 normal',
+    mastBtnRadius:'20px', tabSize:14, shareRadius:'20px', headCase:'none', headSize:38, headLine:110,
+    alignAll:'center', kickerAlign:'center', headAlign:'center', dekAlign:'center', bylineAlign:'center', updatedAlign:'center', crumbAlign:'center', radius:8,
+    bg:'#f4e7d3', ink:'#2b2a27', text:'#3a3935', muted:'#827f75',
+    outletC:'#2b2a27', iconC:'#2b2a27', mastFont:"'Space Grotesk'", mastBg:'#f4e7d3', mastSize:26, mastH:70, mastAlign:'flex-start', mastLine:false, ruleStyle:'dots', ruleWeight:1,
+    tabBg:'#e6d7bf', tabActiveC:'#d9522b', tabTextC:'#5c5a53', tabsStyle:'pill', tabPad:16,
+    logoShape:'diamond', logoFont:"'Space Grotesk'", logoBg:'#d9522b', logoFg:'#ffffff', logoFontSize:14,
+    kickerBorderC:'#d9522b', kickerTextC:'#d9522b', kickerStyle:'outline', crumbC:'#d9522b', dekC:'#5c5a53', ruleC:'#d1c4b0',
+    subC:'#2b2a27', tagBorderC:'#d9522b', tagTextC:'#d9522b', tagStyle:'text', shareC:'#2b2a27', shareText:'Share', shareIcon:'link', updatedDotC:'#d9522b', updatedTextC:'#d9522b',
+    show:{browser:false, masthead:true, hamburger:true, hsearch:true, hbell:false, haccount:false, mastBtn:true, logo:true, tabs:false, breadcrumb:true, kicker:true, dek:true, byline:true, updated:false, tag:false, share:false, image:false, caption:false, body:true, ruleTop:true, ruleBottom:true, footer:false}}}
+};
+
+const SAMPLES = [
+  {kickerText:'Getting Answers', headline:'City council votes to extend farmers market season through late November', dekText:'Vendors had petitioned for the extension for three consecutive years, citing strong autumn attendance.', author:'Elena Marsh', tagText:'Local', dateline:currentDateline, updatedNum:'18', updatedUnit:'minutes', captionText:'Shoppers at the Riverside market last weekend. (Staff photo)', breadcrumbText:'News > Local > City Hall', bodyText:'The 7\u20132 vote followed a petition drive organized by the vendors association, which argued that late-season demand had outgrown the current calendar.\n\nMarket managers say the extension will add roughly 20 vendor slots per weekend, with heated stalls available from mid-October.'},
+  {kickerText:'Exclusive', headline:'Just 12 days after launch, this compact synth becomes the best-seller in its category', dekText:'Reviewers point to a "surprisingly deep engine" and an unusually low price for the feature set.', author:'Kim Ostrander', tagText:'Gear', dateline:'Published 13 hours ago', updatedNum:'2', updatedUnit:'hours', captionText:'The unit on display at a trade show booth.', breadcrumbText:'Gear > Synths > Compact', bodyText:'Retailers in three regions report the first production run selling out within days, an unusual pace for the category.\n\nThe manufacturer says a second run is already in transit and should reach shelves by the end of the month.'}
+];
+let sampleIdx = 0;
+
+const LOGO_ICONS = {
+  none:'', dot:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8" fill="currentColor"/></svg>',
+  bolt:'<svg viewBox="0 0 24 24"><path d="M13 2 4 14h6l-1 8 9-12h-6z" fill="currentColor"/></svg>', star:'<svg viewBox="0 0 24 24"><path d="M12 2l2.9 6.3 6.9.8-5.1 4.7 1.4 6.8L12 17l-6.1 3.6 1.4-6.8L2.2 9.1l6.9-.8z" fill="currentColor"/></svg>',
+  globe:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3.5 3 14.5 0 18-3-3.5-3-14.5 0-18z"/></svg>',
+  eye:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6-10-6-10-6z"/><circle cx="12" cy="12" r="2.6" fill="currentColor" stroke="none"/></svg>',
+  play:'<svg viewBox="0 0 24 24"><path d="M7 4l13 8-13 8z" fill="currentColor"/></svg>', wave:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M2 12c2.5-5 5-5 7.5 0s5 5 7.5 0"/></svg>'
+};
+const UI = {
+  menu:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M3 6h18M3 12h18M3 18h18"/></svg>', search:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5 21 21"/></svg>',
+  bell:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 3a6 6 0 0 0-6 6v3.2L4.4 15.4a1 1 0 0 0 .8 1.6h13.6a1 1 0 0 0 .8-1.6L18 12.2V9a6 6 0 0 0-6-6zM9.8 19a2.3 2.3 0 0 0 4.4 0z"/></svg>', account:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="9.5"/><circle cx="12" cy="9.6" r="3.1"/><path d="M5.8 19.2c1.3-2.7 3.5-4.1 6.2-4.1s4.9 1.4 6.2 4.1"/></svg>',
+  lock:'<svg viewBox="0 0 24 24" fill="currentColor"><rect x="5" y="10" width="14" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3" fill="none" stroke="currentColor" stroke-width="2.4"/></svg>', bookmark:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 3.5h10a1 1 0 0 1 1 1V21l-6-4-6 4V4.5a1 1 0 0 1 1-1z"/></svg>',
+  shareios:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v11M8.2 6.4 12 2.8l3.8 3.6"/><path d="M6.5 10.5H5a1 1 0 0 0-1 1V20a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-8.5a1 1 0 0 0-1-1h-1.5"/></svg>', dots:'<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.9"/><circle cx="12" cy="12" r="1.9"/><circle cx="19" cy="12" r="1.9"/></svg>',
+  sharenode:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><circle cx="6" cy="12" r="2.6"/><circle cx="17.5" cy="5.5" r="2.6"/><circle cx="17.5" cy="18.5" r="2.6"/><path d="M8.3 10.7l6.9-4M8.3 13.3l6.9 4"/></svg>'
+};
+const SHARE_ICONS = {
+  nodes: UI.sharenode, ios: UI.shareios,
+  link:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M10 14a5 5 0 0 0 7.1 0l3-3a5 5 0 0 0-7.1-7.1l-1.6 1.6"/><path d="M14 10a5 5 0 0 0-7.1 0l-3 3a5 5 0 0 0 7.1 7.1l1.6-1.6"/></svg>',
+  plane:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M22 2 2.6 10.2a.7.7 0 0 0 .05 1.3L9 13.7l2.2 6.4a.7.7 0 0 0 1.3.06L22 2zM9.6 13.2 19.4 5 11 14.6l-1.4-1.4z"/></svg>', none:''
+};
+
+const panel = document.getElementById('panel');
+
+const themeChips = document.getElementById('themeChips');
+Object.entries(THEMES).forEach(([key,t])=>{
+  const b = document.createElement('button');
+  b.className = 'chip'; b.textContent = t.label; b.dataset.theme = key;
+  b.onclick = ()=>applyTheme(key);
+  themeChips.appendChild(b);
+});
+
+document.querySelectorAll('select.fontsel').forEach(sel=>{
+  FONTS.forEach(([val,label])=>{
+    const o = document.createElement('option'); o.value = val; o.textContent = label;
+    sel.appendChild(o);
+  });
+});
+
+const fmt = (k,v)=> (k==='headLine'||k==='bodyLine') ? (v/100).toFixed(2) : k==='logoIconSize' ? v+'%' : v+'px';
+
+panel.addEventListener('input', e=>{
+  const t = e.target, k = t.dataset.k;
+  if(!k) return;
+  if(t.type==='checkbox'){ 
+    if(k in state.show) state.show[k] = t.checked; 
+    else state[k] = t.checked;
+  }
+  else if(t.type==='range'){
+    state[k] = +t.value;
+    const o = t.parentElement.querySelector('output'); if(o) o.textContent = fmt(k, t.value);
+  }
+  else { state[k] = t.value; }
+  render();
+  commit();
+});
+
+panel.addEventListener('click', e=>{
+  const b = e.target.closest('button[data-k]');
+  if(!b) return;
+  const v = b.dataset.v;
+  if(b.dataset.k==='cardW'){
+    const w = +v;
+    if(mqMobile.matches && w > 460){ enterPreview(w); return; }
+    if(preview.on) exitPreview();
+    state.cardW = w;
+    [...b.parentElement.children].forEach(x=>x.classList.toggle('active', x===b));
+    render(); commit(true); return;
+  }
+  if(b.dataset.k==='alignAll'){
+    state.alignAll = v;
+    state.kickerAlign = state.headAlign = state.dekAlign = state.crumbAlign = state.footerAlign = v;
+    state.bylineAlign = state.updatedAlign = (v==='center') ? 'center' : 'flex-start';
+    syncControls(); render(); commit(true); return;
+  }
+  state[b.dataset.k] = isNaN(+v) ? v : +v;
+  [...b.parentElement.children].forEach(x=>x.classList.toggle('active', x===b));
+  render();
+  commit(true);
+});
+
+const HICON_LABELS = { bell:'Bell', account:'Account', search:'Search', btn:'Action button' };
+const hiconOrderList = document.getElementById('hiconOrderList');
+function renderHiconOrder(){
+  if(!Array.isArray(state.hiconOrder) || state.hiconOrder.length !== 4) state.hiconOrder = ['bell','account','search','btn'];
+  hiconOrderList.innerHTML = '';
+  state.hiconOrder.forEach((k, i)=>{
+    const row = document.createElement('div'); row.className = 'order-row';
+    const name = document.createElement('span'); name.textContent = (i+1) + '. ' + (HICON_LABELS[k] || k);
+    const ob = document.createElement('span'); ob.className = 'ob';
+    const up = document.createElement('button'); up.type='button'; up.textContent='\u2191'; up.title='Move earlier'; up.disabled = i===0;
+    const dn = document.createElement('button'); dn.type='button'; dn.textContent='\u2193'; dn.title='Move later'; dn.disabled = i===state.hiconOrder.length-1;
+    up.onclick = ()=>{ const o=state.hiconOrder; [o[i-1],o[i]]=[o[i],o[i-1]]; renderHiconOrder(); render(); commit(true); };
+    dn.onclick = ()=>{ const o=state.hiconOrder; [o[i+1],o[i]]=[o[i],o[i+1]]; renderHiconOrder(); render(); commit(true); };
+    ob.appendChild(up); ob.appendChild(dn);
+    row.appendChild(name); row.appendChild(ob);
+    hiconOrderList.appendChild(row);
+  });
+}
+
+function syncControls(){
+  panel.querySelectorAll('[data-k]').forEach(t=>{
+    const k = t.dataset.k;
+    if(t.tagName==='BUTTON'){ t.classList.toggle('active', String(state[k])===t.dataset.v); }
+    else if(t.type==='checkbox'){
+      if(k in state.show) t.checked = !!state.show[k];
+      else t.checked = !!state[k];
+    }
+    else if(t.type==='range'){
+      t.value = state[k];
+      const o = t.parentElement.querySelector('output'); if(o) o.textContent = fmt(k, state[k]);
+    }
+    else { t.value = state[k] !== undefined ? state[k] : ''; }
+  });
+  [...themeChips.children].forEach(c=>c.classList.toggle('active', c.dataset.theme===state.theme));
+  renderHiconOrder();
+  renderImageList();
+}
+
+function applyTheme(key){
+  state.theme = key;
+  const p = THEMES[key].patch;
+  Object.entries(p).forEach(([k,v])=>{
+    if(k==='show') Object.assign(state.show, v);
+    else state[k] = v;
+  });
+  syncControls(); render(); commit(true);
+}
+
+document.getElementById('shuffleBtn').onclick = ()=>{
+  const patch = SAMPLES[sampleIdx++ % SAMPLES.length];
+  Object.assign(state, patch);
+  if(patch.captionText && Array.isArray(state.images) && state.images[0]) state.images[0].caption = patch.captionText;
+  delete state.captionText;
+  syncControls(); render(); commit(true);
+};
+
+/* ---------- toast ---------- */
+const toastEl = document.getElementById('toast');
+let toastTimer;
+function toast(msg){
+  toastEl.textContent = msg;
+  toastEl.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>toastEl.classList.remove('show'), 2400);
+}
+
+/* ---------- presets: multiple named saves in localStorage ---------- */
+const PRESETS_KEY = 'pasteUpPresets';
+function readPresets(){
+  try{ return JSON.parse(localStorage.getItem(PRESETS_KEY)) || {}; }
+  catch(e){ return {}; }
+}
+function writePresets(p){
+  try{ localStorage.setItem(PRESETS_KEY, JSON.stringify(p)); return true; }
+  catch(e){ toast('Could not save — browser storage unavailable.'); return false; }
+}
+/* migrate the old single-slot save, if one exists */
+try{
+  const legacy = localStorage.getItem('pasteUpPreset');
+  if(legacy){
+    const p = readPresets();
+    if(!Object.keys(p).length){ p['Imported setup'] = JSON.parse(legacy); writePresets(p); }
+    localStorage.removeItem('pasteUpPreset');
+  }
+}catch(e){}
+
+/* merge a saved preset over the defaults, so old presets stay
+   compatible when new settings are added later */
+function mergeIntoDefaults(saved){
+  const base = JSON.parse(JSON.stringify(DEFAULT_STATE));
+  if(saved && typeof saved === 'object'){
+    Object.entries(saved).forEach(([k,v])=>{
+      if(k === 'show' && v && typeof v === 'object') Object.assign(base.show, v);
+      else if(k in base) base[k] = v;
+    });
+    /* migrate presets saved before multi-image support */
+    if(!Array.isArray(saved.images) && ('imgSrc' in saved || 'imgRatio' in saved || 'imgPos' in saved || 'captionText' in saved)){
+      base.images = [{
+        src: saved.imgSrc || '',
+        ratio: saved.imgRatio || '16 / 10',
+        corner: saved.imgCorner || '0px',
+        pos: saved.imgPos || 'above',
+        caption: saved.captionText || base.images[0].caption,
+        showCaption: !!(saved.show && saved.show.caption),
+        posX:50, posY:50, zoom:100
+      }];
+    }
+  }
+  return base;
+}
+
+const presetBtn  = document.getElementById('presetBtn');
+const presetPop  = document.getElementById('presetPop');
+const presetName = document.getElementById('presetName');
+const presetList = document.getElementById('presetList');
+let currentPresetName = null;
+
+const quickSaveBtn = document.getElementById('quickSaveBtn');
+function refreshQuickSave(){
+  quickSaveBtn.textContent = currentPresetName ? 'Save' : 'Save\u2026';
+  quickSaveBtn.title = currentPresetName
+    ? 'Save changes to \u201C' + currentPresetName + '\u201D'
+    : 'Save as a new preset';
+}
+quickSaveBtn.onclick = ()=>{
+  if(!currentPresetName){ openPresetPop(); return; }
+  const p = readPresets();
+  p[currentPresetName] = JSON.parse(JSON.stringify(state));
+  if(writePresets(p)) toast('Saved \u201C' + currentPresetName + '\u201D');
+};
+
+function renderPresetList(){
+  const p = readPresets(), names = Object.keys(p);
+  presetList.innerHTML = '';
+  if(!names.length){
+    const d = document.createElement('div');
+    d.className = 'pop-empty'; d.textContent = 'No saved presets yet.';
+    presetList.appendChild(d); return;
+  }
+  names.forEach(name=>{
+    const row = document.createElement('div'); row.className = 'preset-item';
+    const load = document.createElement('button');
+    load.className = 'pname'; load.type = 'button'; load.textContent = name;
+    load.title = 'Load ' + name;
+    load.onclick = ()=>{
+      state = mergeIntoDefaults(readPresets()[name]);
+      currentPresetName = name; refreshQuickSave();
+      syncControls(); render(); commit(true); closePresetPop();
+      toast('Loaded \u201C' + name + '\u201D');
+    };
+    const del = document.createElement('button');
+    del.className = 'pdel'; del.type = 'button'; del.innerHTML = '&#10005;';
+    del.title = 'Delete ' + name;
+    del.onclick = ()=>{
+      if(del.dataset.armed){
+        const cur = readPresets(); delete cur[name];
+        if(currentPresetName === name){ currentPresetName = null; refreshQuickSave(); }
+        if(writePresets(cur)){ renderPresetList(); toast('Deleted \u201C' + name + '\u201D'); }
+        return;
+      }
+      del.dataset.armed = '1'; del.textContent = 'Sure?';
+      setTimeout(()=>{ if(del.isConnected){ del.dataset.armed = ''; del.innerHTML = '&#10005;'; } }, 2500);
+    };
+    row.appendChild(load); row.appendChild(del); presetList.appendChild(row);
+  });
+}
+function openPresetPop(){ presetPop.hidden = false; presetBtn.setAttribute('aria-expanded','true'); renderPresetList(); presetName.focus(); }
+function closePresetPop(){ presetPop.hidden = true; presetBtn.setAttribute('aria-expanded','false'); }
+presetBtn.onclick = ()=> presetPop.hidden ? openPresetPop() : closePresetPop();
+document.addEventListener('click', e=>{
+  if(!presetPop.hidden && !presetPop.contains(e.target) && !presetBtn.contains(e.target)) closePresetPop();
+});
+document.getElementById('presetSaveBtn').onclick = ()=>{
+  const p = readPresets();
+  let name = presetName.value.trim();
+  if(!name){ let n = 1; while(p['Preset ' + n]) n++; name = 'Preset ' + n; }
+  const existed = name in p;
+  p[name] = JSON.parse(JSON.stringify(state));
+  if(writePresets(p)){
+    presetName.value = ''; renderPresetList();
+    currentPresetName = name; refreshQuickSave();
+    toast((existed ? 'Updated \u201C' : 'Saved \u201C') + name + '\u201D');
+  }
+};
+presetName.addEventListener('keydown', e=>{ if(e.key === 'Enter') document.getElementById('presetSaveBtn').click(); });
+
+/* ---------- export PNG ---------- */
+const exportBtn = document.getElementById('exportBtn');
+exportBtn.onclick = async ()=>{
+  if(typeof html2canvas === 'undefined'){
+    toast('Export library failed to load — check your connection and reload.'); return;
+  }
+  const cardEl = document.getElementById('card');
+  const label = exportBtn.textContent;
+  exportBtn.disabled = true; exportBtn.textContent = 'Exporting\u2026';
+  /* html2canvas garbles text when the card sits under CSS zoom (format preview),
+     so lift the zoom for the capture and put it back afterwards */
+  const zoomWas = preview.on ? preview.zoom : null;
+  try{
+    /* the card animates width changes — snap to final size before measuring,
+       otherwise images capture at their mid-transition (scrunched) dimensions */
+    cardEl.style.transition = 'none';
+    if(zoomWas !== null){
+      cardWrapEl.style.zoom = '';
+    }
+    void cardEl.offsetWidth; /* force reflow at final size */
+    await new Promise(r => requestAnimationFrame(()=>requestAnimationFrame(r)));
+    if(document.fonts && document.fonts.ready) await document.fonts.ready;
+    /* html2canvas can't handle the CSS aspect-ratio property, so measure
+       those elements live and freeze their sizes on the capture clone */
+    const measured = [...cardEl.querySelectorAll('.imgblock, .logo')]
+      .map(el => ({ w: el.offsetWidth, h: el.offsetHeight }));
+    const canvas = await html2canvas(cardEl, {
+      scale: 2, useCORS: true, backgroundColor: null, logging: false,
+      onclone: (doc)=>{
+        const clones = doc.getElementById('card').querySelectorAll('.imgblock, .logo');
+        clones.forEach((el, i)=>{
+          const m = measured[i]; if(!m) return;
+          el.style.aspectRatio = 'auto';
+          el.style.width  = m.w + 'px';
+          el.style.height = m.h + 'px';
+        });
+      }
+    });
+    const blob = await new Promise(res => canvas.toBlob(res, 'image/png'));
+    if(!blob) throw new Error('canvas.toBlob returned null');
+    const t = new Date(), pad = n => String(n).padStart(2, '0');
+    const name = 'paste-up-' + t.getFullYear() + pad(t.getMonth()+1) + pad(t.getDate()) + '-' + pad(t.getHours()) + pad(t.getMinutes()) + '.png';
+    openExportModal(blob, name);
+  }catch(err){
+    console.error('Export failed:', err);
+    toast('Export failed — please try again.');
+  }finally{
+    cardEl.style.transition = '';
+    if(zoomWas !== null) cardWrapEl.style.zoom = zoomWas;
+    exportBtn.disabled = false; exportBtn.textContent = label;
+  }
+};
+
+const sBtn = document.getElementById('scrollTopBtn');
+const handleScroll = () => { sBtn.style.display = (panel.scrollTop > 300 || window.scrollY > 300) ? 'block' : 'none'; };
+panel.addEventListener('scroll', handleScroll);
+window.addEventListener('scroll', handleScroll);
+sBtn.onclick = () => { panel.scrollTo({top: 0, behavior: 'smooth'}); window.scrollTo({top: 0, behavior: 'smooth'}); };
+
+const card = document.getElementById('card');
+const esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+const parseWS = (val, prefix) => {
+  const [w, s] = (val || '400 normal').split(' ');
+  return { [`--${prefix}-w`]: w, [`--${prefix}-s`]: s };
+};
+
+function render(){
+  const s = state, sh = s.show, cs = card.style;
+  const wsVars = {
+    ...parseWS(s.mastWS, 'a-mast'), ...parseWS(s.mastBtnWS, 'a-mastbtn'), ...parseWS(s.logoWS, 'a-logo'),
+    ...parseWS(s.tabWS, 'a-tab'), ...parseWS(s.crumbWS, 'a-crumb'), ...parseWS(s.kickerWS, 'a-kicker'),
+    ...parseWS(s.headWS, 'a-head'), ...parseWS(s.dekWS, 'a-dek'), ...parseWS(s.bylineWS, 'a-byline'),
+    ...parseWS(s.dateWS, 'a-date'), ...parseWS(s.updatedWS, 'a-upd'), ...parseWS(s.tagWS, 'a-tag'),
+    ...parseWS(s.shareWS, 'a-share'), ...parseWS(s.bodyWS, 'a-body'), ...parseWS(s.footerWS, 'a-footer')
+  };
+
+  const V = {
+    '--card-w':s.cardW+'px', '--a-radius':s.radius+'px', '--a-bg':s.bg,
+    '--a-head-font':s.headFont, '--a-body-font':s.bodyFont, '--a-head-case':s.headCase,
+    '--a-head-size':s.headSize+'px', '--a-head-line':s.headLine/100, '--a-head-ls':s.headLS+'px',
+    '--body-line':s.bodyLine/100, '--k-case':s.kickerCase,
+    '--a-tab-font':s.tabFont, '--a-tab-size':s.tabSize+'px', '--a-crumb-font':s.crumbFont, '--a-kicker-font':s.kickerFont, 
+    '--a-dek-font':s.dekFont, '--a-byline-font':s.bylineFont, '--a-date-font':s.dateFont, '--a-upd-font':s.updatedFont, 
+    '--a-tag-font':s.tagFont, '--a-share-font':s.shareFont, '--share-radius':s.shareRadius,
+    '--a-footer-font':s.footerFont, '--sz-footer':s.footerSize+'px', '--a-footer-c':s.footerC, '--al-footer':s.footerAlign,
+    '--al-kicker':s.kickerAlign, '--al-head':s.headAlign, '--al-dek':s.dekAlign,
+    '--al-by':s.bylineAlign, '--al-by-text':s.bylineAlign==='center'?'center':'left', '--al-by-dir':s.bylineAlign==='center'?'column':'row',
+    '--al-upd':s.updatedAlign==='center'?'center':'flex-start', '--al-crumb':s.crumbAlign,
+    '--a-ink':s.ink, '--a-text':s.text, '--a-muted':s.muted,
+    '--a-mast-bg':s.mastBg, '--a-mast-font':s.mastFont, '--a-mast-size':s.mastSize+'px', '--a-mast-h':s.mastH+'px',
+    '--mast-line':s.mastLine ? '1px solid '+s.ruleC : '0px solid transparent', '--a-outlet':s.outletC, '--a-icon':s.iconC,
+    '--a-mastbtn-font':s.mastBtnFont, '--mast-btn-radius':s.mastBtnRadius, '--a-mastbtn-size':s.mastBtnSize+'px',
+    '--a-tab-bg':s.tabBg, '--a-tab-active':s.tabActiveC, '--a-tab-text':s.tabTextC, '--tab-pad':s.tabPad+'px',
+    '--a-sub':s.subC, '--a-crumb':s.crumbC, '--k-border':s.kickerBorderC, '--k-text':s.kickerTextC, '--k-pad':s.kickerPad+'px', '--a-dek':s.dekC,
+    '--upd-dot':s.updatedDotC, '--upd-text':s.updatedTextC,
+    '--by-und':(s.authorUnderline==='plain' ? 'none' : 'underline'),
+    '--kside-c':s.kickerSideC, '--tside-c':s.tagSideC,
+    '--t-border':s.tagBorderC, '--t-text':s.tagTextC, '--a-share':s.shareC,
+    '--l-size':s.logoSize+'px', '--l-icon':Math.round(s.logoSize*s.logoIconSize/100)+'px',
+    '--l-bg':s.logoBg, '--l-fg':s.logoFg, '--a-logo-font':s.logoFont, '--l-font-sz':s.logoFontSize+'px',
+    '--div-s':s.ruleStyle==='short' ? 'solid' : s.ruleStyle, '--div-w':s.ruleWeight+'px', '--div-c':s.ruleC,
+    '--sz-crumb':s.crumbSize+'px', '--sz-kicker':s.kickerSize+'px', '--sz-dek':s.dekSize+'px',
+    '--sz-by':s.authorSize+'px', '--sz-date':s.bylineSize+'px', '--sz-upd':s.updatedSize+'px',
+    '--sz-tag':s.tagSize+'px', '--sz-body':s.bodySize+'px', '--sz-share':s.shareSize+'px',
+    '--sp-crumb':s.spCrumb+'px', '--sp-kicker':s.spKicker+'px', '--sp-head':s.spHead+'px', '--sp-dek':s.spDek+'px',
+    '--sp-divtop':s.spDivTop+'px', '--sp-byline':s.spByline+'px', '--sp-upd':s.spUpd+'px', '--sp-meta':s.spMeta+'px',
+    '--sp-imgtop':s.spImgTop+'px', '--sp-img':s.spImg+'px', '--sp-p':s.spP+'px', '--sp-divbot':s.spDivBot+'px',
+    ...wsVars
+  };
+  Object.entries(V).forEach(([k,v])=>cs.setProperty(k,v));
+
+  const crumbHtml = esc(s.breadcrumbText).split('&gt;').map(x=>x.trim()).filter(Boolean).join('<span class="sep">&gt;</span>');
+  const logoInner = s.logoImg ? `<img class="lg-up" src="${s.logoImg}" alt="">` : `${LOGO_ICONS[s.logoIcon]||''}${s.logoText ? `<span>${esc(s.logoText)}</span>` : ''}`;
+  const logoHtml = sh.logo ? `<span class="logo ${s.logoShape}${(!s.logoImg && s.logoText) ? ' hastext' : ''}"><span class="lg-in">${logoInner}</span></span>` : '';
+  const tabList = s.tabsText.split(',').map(t=>t.trim()).filter(Boolean);
+  const tabsHtml = (sh.tabs && tabList.length) ? `<div class="tabs ${s.tabsStyle}">${tabList.map((t,i)=>`<span${i===0?' class="on"':''}>${esc(t)}</span>`).join('')}</div>` : '';
+  const HICON_ON = { bell: sh.hbell && UI.bell, account: sh.haccount && UI.account, search: sh.hsearch && UI.search,
+    btn: sh.mastBtn && `<button class="mast-btn">${esc(s.mastBtnText)}</button>` };
+  const order = Array.isArray(s.hiconOrder) ? s.hiconOrder : ['bell','account','search','btn'];
+  const rightIcons = order.map(k => HICON_ON[k] || '').join('');
+  const imgs = (sh.image && Array.isArray(s.images)) ? s.images : [];
+  const imgCropStyle = (im)=>{
+    const z = Math.max(100, +im.zoom || 100), px = im.posX == null ? 50 : +im.posX, py = im.posY == null ? 50 : +im.posY;
+    return `width:${z}%;height:${z}%;left:${-(z-100)*px/100}%;top:${-(z-100)*py/100}%;object-position:${px}% ${py}%`;
+  };
+  const imgBlockHtml = (im, idx, hero)=>(
+    `<div class="imgblock${im.src ? ' has-img' : ''}${hero ? ' hero' : ''}" data-imgidx="${idx}" style="--img-ratio:${im.ratio}; --img-corner:${im.corner}">${im.src ? `<img src="${im.src}" alt="" style="${imgCropStyle(im)}" draggable="false">` : ''}<span>IMAGE</span></div>`
+    + (im.showCaption ? `<div class="caption${hero ? ' herocap' : ''}">${esc(im.caption)}</div>` : '')
+  );
+  const withIdx = imgs.map((im, idx)=>({im, idx}));
+  const heroHtml  = withIdx.filter(o=>o.im.pos==='top').map(o=>imgBlockHtml(o.im, o.idx, true)).join('');
+  const aboveHtml = withIdx.filter(o=>o.im.pos==='above').map(o=>imgBlockHtml(o.im, o.idx, false)).join('');
+  const belowHtml = withIdx.filter(o=>o.im.pos==='below').map(o=>imgBlockHtml(o.im, o.idx, false)).join('');
+  const updHtml = sh.updated ? `<div class="updated"><i></i>Updated ${s.updatedNum} ${s.updatedUnit} ago</div>` : '';
+  const shareBtnHtml = sh.share ? `<span class="sharebtn">${SHARE_ICONS[s.shareIcon]||''}${esc(s.shareText)}</span>` : '';
+  const tagRowSplit = sh.tag && sh.tagSide && sh.share;
+  const bodyInner = (s.bodyRich && s.bodyHtml)
+    ? s.bodyHtml
+    : s.bodyText.split(/\n+/).map(t=>t.trim()).filter(Boolean).map(t=>`<p>${esc(t)}</p>`).join('');
+
+  card.innerHTML = `
+    ${sh.browser ? `
+    <div class="browser">
+      <span class="x">&#10005;</span>
+      <span class="urlpill">${UI.lock}${esc(s.url)}</span>
+      ${UI.bookmark}${UI.shareios}${UI.dots}
+    </div>` : ''}
+    ${sh.masthead ? `
+    <div class="masthead ${s.mastAlign==='flex-start' ? 'align-left' : 'align-center'}">
+      ${sh.hamburger ? `<span class="hbtn">${UI.menu}</span>` : (s.mastAlign==='center' ? '<span class="hbtn ghost"></span>' : '')}
+      <span class="brand">${logoHtml}<span class="name">${esc(s.outlet)}</span></span>
+      <span class="hicons">${rightIcons}</span>
+    </div>` : ''}
+    ${tabsHtml}
+    ${heroHtml}
+    <div class="bodypad">
+      ${sh.breadcrumb ? `<div class="crumbs">${crumbHtml}</div>` : ''}
+      ${sh.kicker ? `<div class="kickerwrap"><span class="kicker ${s.kickerStyle}">${esc(s.kickerText)}</span>${sh.kickerSide ? `<span class="sidetext k">${esc(s.kickerSideText)}</span>` : ''}</div>` : ''}
+      <h1 class="headline">${esc(s.headline)}</h1>
+      ${sh.dek ? `<p class="dek">${esc(s.dekText)}</p>` : ''}
+      ${sh.ruleTop ? (s.ruleStyle==='dots' ? `<div class="divider dots"></div>` : `<hr class="divider top ${s.ruleStyle==='short'?'short':''}">`) : ''}
+      ${sh.byline ? `
+      <div class="byline">
+        <div class="bywho">
+          <div>${s.byPrefix==='by' ? '<span class="byword">By </span>' : s.byPrefix==='bycolon' ? '<span class="byword">By: </span>' : ''}<span class="author">${esc(s.author)}</span></div>
+          <div class="date">${esc(s.dateline)}</div>
+        </div>
+      </div>` : ''}
+      ${s.updatedPos !== 'rule' ? updHtml : ''}
+      ${(sh.tag || sh.share) ? `
+      <div class="metarow">
+        ${sh.tag ? `<span class="tagchip ${s.tagStyle}">${esc(s.tagText)}</span>${sh.tagSide ? `<span class="sidetext t">${esc(s.tagSideText)}</span>` : ''}` : ''}
+        ${!tagRowSplit ? shareBtnHtml : ''}
+      </div>
+      ${tagRowSplit ? `<div class="metarow">${shareBtnHtml}</div>` : ''}` : ''}
+      ${aboveHtml}
+      ${sh.ruleBottom ? (s.ruleStyle==='dots' ? `<div class="divider dots"></div>` : `<hr class="divider bottom ${s.ruleStyle==='short'?'short':''}">`) : ''}
+      ${s.updatedPos === 'rule' ? updHtml : ''}
+      ${sh.body ? `<div class="bodycopy${s.dropCap ? ' dropcap' : ''}">${bodyInner}</div>` : ''}
+      ${belowHtml}
+      ${sh.footer ? `<div class="footer-mark">${esc(s.footerText)}</div>` : ''}
+    </div>
+  `;
+}
+
+document.getElementById('cleanBtn').onclick = ()=>{ document.body.classList.add('clean'); if(mqMobile.matches) setTray(false); };
+document.getElementById('exitClean').onclick = ()=>document.body.classList.remove('clean');
+document.addEventListener('keydown', e=>{
+  if(e.key !== 'Escape') return;
+  document.body.classList.remove('clean');
+  closePresetPop();
+  closeExportModal();
+  closeRtModal();
+  exitPreview();
+  if(mqMobile.matches) setTray(false);
+});
+
+
+/* ---------- export modal ---------- */
+const exportModal = document.getElementById('exportModal');
+const emImg = document.getElementById('emImg');
+const emShare = document.getElementById('emShare');
+const emCopy = document.getElementById('emCopy');
+let lastExport = null;
+emCopy.onclick = async ()=>{
+  if(!lastExport) return;
+  try{
+    await navigator.clipboard.write([new ClipboardItem({'image/png': lastExport.blob})]);
+    toast('Image copied to clipboard.');
+  }catch(e1){
+    try{ /* Safari prefers the promise form */
+      await navigator.clipboard.write([new ClipboardItem({'image/png': Promise.resolve(lastExport.blob)})]);
+      toast('Image copied to clipboard.');
+    }catch(e2){
+      toast('Copy not available in this browser \u2014 use Download or Share.');
+    }
+  }
+};
+function openExportModal(blob, name){
+  closeExportModal();
+  lastExport = { blob, name, url: URL.createObjectURL(blob) };
+  emImg.src = lastExport.url;
+  let canShare = false;
+  try{
+    const f = new File([blob], name, { type:'image/png' });
+    canShare = !!(navigator.canShare && navigator.canShare({ files:[f] }));
+  }catch(e){}
+  emShare.style.display = canShare ? '' : 'none';
+  emCopy.style.display = (navigator.clipboard && window.ClipboardItem) ? '' : 'none';
+  exportModal.classList.add('show');
+}
+function closeExportModal(){
+  exportModal.classList.remove('show');
+  if(lastExport){ URL.revokeObjectURL(lastExport.url); lastExport = null; }
+  emImg.removeAttribute('src');
+}
+document.getElementById('emClose').onclick = closeExportModal;
+exportModal.addEventListener('click', e=>{ if(e.target === exportModal) closeExportModal(); });
+emShare.onclick = async ()=>{
+  if(!lastExport) return;
+  try{
+    const f = new File([lastExport.blob], lastExport.name, { type:'image/png' });
+    await navigator.share({ files:[f] });
+  }catch(e){ /* user cancelled the share sheet — nothing to do */ }
+};
+document.getElementById('emDownload').onclick = ()=>{
+  if(!lastExport) return;
+  const link = document.createElement('a');
+  link.download = lastExport.name;
+  link.href = lastExport.url;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  toast('Downloading\u2026 check your downloads or Files app.');
+};
+
+/* ---------- image uploads (100% local — files never leave the page) ---------- */
+function loadImageFile(file, opts, done){
+  if(!file) return;
+  if(!file.type || !file.type.startsWith('image/')){ toast('Please choose an image file.'); return; }
+  const fr = new FileReader();
+  fr.onerror = ()=>toast('Could not read that file.');
+  fr.onload = ()=>{
+    const img = new Image();
+    img.onload = ()=>{
+      if(!img.width || !img.height){ done(fr.result); return; }
+      const maxDim = opts.maxDim || 1600;
+      const scale = Math.min(1, maxDim / Math.max(img.width, img.height));
+      const c = document.createElement('canvas');
+      c.width = Math.max(1, Math.round(img.width * scale));
+      c.height = Math.max(1, Math.round(img.height * scale));
+      const ctx = c.getContext('2d');
+      if(!ctx){ done(fr.result); return; }
+      ctx.drawImage(img, 0, 0, c.width, c.height);
+      /* keepAlpha -> PNG (logo transparency); otherwise JPEG keeps presets small */
+      done(opts.keepAlpha ? c.toDataURL('image/png') : c.toDataURL('image/jpeg', .88));
+    };
+    img.onerror = ()=>toast('Could not read that image.');
+    img.src = fr.result;
+  };
+  fr.readAsDataURL(file);
+}
+document.getElementById('logoFile').addEventListener('change', e=>{
+  loadImageFile(e.target.files[0], {maxDim:512, keepAlpha:true}, url=>{
+    state.logoImg = url; state.show.logo = true;
+    syncControls(); render(); commit(true); toast('Logo image added.');
+  });
+  e.target.value = '';
+});
+document.getElementById('logoFileClear').onclick = ()=>{
+  if(!state.logoImg) return;
+  state.logoImg = ''; render(); commit(true); toast('Logo image removed.');
+};
+/* ---------- multiple images: per-image editor list ---------- */
+const IMG_RATIOS = [['16 / 9','Wide 16:9'],['16 / 10','Standard 16:10'],['4 / 3','Classic 4:3'],['1 / 1','Square 1:1'],['3 / 4','Portrait 3:4'],['9 / 16','Tall 9:16 (fills screen)']];
+const IMG_CORNERS = [['0px','Sharp'],['14px','Rounded'],['999px','Circle / pill']];
+const IMG_POSITIONS = [['top','Top, full width'],['above','Above body'],['below','Below body']];
+const imgListEl = document.getElementById('imgList');
+function newImage(){
+  return {src:'', ratio:'16 / 10', corner:'0px', pos:'above', caption:'Image caption. (Staff photo)', showCaption:false, posX:50, posY:50, zoom:100};
+}
+function renderImageList(){
+  if(!Array.isArray(state.images)) state.images = [newImage()];
+  imgListEl.innerHTML = '';
+  state.images.forEach((im, i)=>{
+    const box = document.createElement('div'); box.className = 'img-item';
+
+    const hd = document.createElement('div'); hd.className = 'img-item-hd';
+    const title = document.createElement('span');
+    title.textContent = 'Image ' + (i+1) + (im.src ? ' \u2014 photo added' : '');
+    const ob = document.createElement('span'); ob.className = 'ob';
+    const mk = (txt, tip, dis, fn)=>{
+      const b = document.createElement('button'); b.type='button'; b.textContent = txt; b.title = tip; b.disabled = dis; b.onclick = fn; return b;
+    };
+    ob.appendChild(mk('\u2191','Move earlier', i===0, ()=>{ const a=state.images; [a[i-1],a[i]]=[a[i],a[i-1]]; renderImageList(); render(); commit(true); }));
+    ob.appendChild(mk('\u2193','Move later', i===state.images.length-1, ()=>{ const a=state.images; [a[i+1],a[i]]=[a[i],a[i+1]]; renderImageList(); render(); commit(true); }));
+    ob.appendChild(mk('\u2715','Delete this image', false, ()=>{ state.images.splice(i,1); renderImageList(); render(); commit(true); }));
+    hd.appendChild(title); hd.appendChild(ob); box.appendChild(hd);
+
+    const row = document.createElement('div'); row.className = 'row2';
+    const mkSel = (label, opts, val, set)=>{
+      const f = document.createElement('div'); f.className = 'field';
+      const l = document.createElement('label'); l.textContent = label; f.appendChild(l);
+      const sel = document.createElement('select');
+      opts.forEach(([v,txt])=>{ const o=document.createElement('option'); o.value=v; o.textContent=txt; sel.appendChild(o); });
+      sel.value = val;
+      sel.onchange = ()=>{ set(sel.value); render(); commit(true); };
+      f.appendChild(sel); return f;
+    };
+    row.appendChild(mkSel('Shape', IMG_RATIOS, im.ratio, v=>im.ratio=v));
+    row.appendChild(mkSel('Corners', IMG_CORNERS, im.corner, v=>im.corner=v));
+    box.appendChild(row);
+
+    const pf = document.createElement('div'); pf.className = 'field';
+    const pl = document.createElement('label'); pl.textContent = 'Placement'; pf.appendChild(pl);
+    const seg = document.createElement('div'); seg.className = 'seg';
+    IMG_POSITIONS.forEach(([v,txt])=>{
+      const b = document.createElement('button'); b.type='button'; b.textContent = txt;
+      b.classList.toggle('active', im.pos===v);
+      b.onclick = ()=>{ im.pos = v; [...seg.children].forEach(x=>x.classList.toggle('active', x===b)); render(); commit(true); };
+      seg.appendChild(b);
+    });
+    pf.appendChild(seg); box.appendChild(pf);
+
+    const fr = document.createElement('div'); fr.className = 'file-row'; fr.style.marginBottom = '8px';
+    const upl = document.createElement('label'); upl.className = 'chip'; upl.textContent = 'Upload photo';
+    const fi = document.createElement('input'); fi.type = 'file'; fi.accept = 'image/*';
+    fi.addEventListener('change', e=>{
+      loadImageFile(e.target.files[0], {maxDim:1600}, url=>{
+        im.src = url; state.show.image = true;
+        syncControls(); render(); commit(true); toast('Image ' + (i+1) + ' photo added.');
+      });
+      e.target.value = '';
+    });
+    upl.appendChild(fi); fr.appendChild(upl);
+    const rm = document.createElement('button'); rm.type='button'; rm.className='chip'; rm.textContent='Clear photo';
+    rm.onclick = ()=>{ if(!im.src) return; im.src=''; renderImageList(); render(); commit(true); };
+    fr.appendChild(rm); box.appendChild(fr);
+
+    if(im.src){
+      const mkRange = (label, min, max, val, set)=>{
+        const f = document.createElement('div'); f.className = 'field';
+        const l = document.createElement('label'); l.textContent = label; f.appendChild(l);
+        const wrap = document.createElement('div'); wrap.className = 'slider-row';
+        const r = document.createElement('input'); r.type = 'range'; r.min = min; r.max = max; r.value = val;
+        const o = document.createElement('output'); o.textContent = val + '%';
+        r.addEventListener('input', ()=>{ o.textContent = r.value + '%'; set(+r.value); render(); commit(); });
+        wrap.appendChild(r); wrap.appendChild(o); f.appendChild(wrap); return f;
+      };
+      box.appendChild(mkRange('Crop zoom', 100, 300, Math.max(100, +im.zoom || 100), v=>im.zoom=v));
+      box.appendChild(mkRange('Pan left \u2194 right', 0, 100, im.posX == null ? 50 : +im.posX, v=>im.posX=v));
+      box.appendChild(mkRange('Pan up \u2195 down', 0, 100, im.posY == null ? 50 : +im.posY, v=>im.posY=v));
+      const hint = document.createElement('div'); hint.className = 'field';
+      const hl = document.createElement('label'); hl.textContent = 'Tip: you can also drag the photo directly on the mockup to reposition it.';
+      hint.appendChild(hl); box.appendChild(hint);
+    }
+
+    const cl = document.createElement('label'); cl.className = 'tgl';
+    const cc = document.createElement('input'); cc.type = 'checkbox'; cc.checked = !!im.showCaption;
+    cc.onchange = ()=>{ im.showCaption = cc.checked; render(); commit(true); };
+    cl.appendChild(cc); cl.appendChild(document.createTextNode('Caption'));
+    box.appendChild(cl);
+    const cf = document.createElement('div'); cf.className = 'field'; cf.style.marginTop = '6px';
+    const ci = document.createElement('input'); ci.type = 'text'; ci.value = im.caption || '';
+    ci.addEventListener('input', ()=>{ im.caption = ci.value; render(); commit(); });
+    cf.appendChild(ci); box.appendChild(cf);
+
+    imgListEl.appendChild(box);
+  });
+}
+document.getElementById('imgAdd').onclick = ()=>{
+  if(!Array.isArray(state.images)) state.images = [];
+  state.images.push(newImage());
+  state.show.image = true;
+  syncControls(); render(); commit(true);
+};
+
+/* drag a photo on the mockup to pan its crop */
+let imgDrag = null;
+function applyImgCrop(blk, im){
+  const img = blk.querySelector('img'); if(!img) return;
+  const z = Math.max(100, +im.zoom || 100), px = im.posX == null ? 50 : +im.posX, py = im.posY == null ? 50 : +im.posY;
+  img.style.width = z + '%'; img.style.height = z + '%';
+  img.style.left = (-(z-100)*px/100) + '%'; img.style.top = (-(z-100)*py/100) + '%';
+  img.style.objectPosition = px + '% ' + py + '%';
+}
+card.addEventListener('pointerdown', e=>{
+  const blk = e.target.closest('.imgblock');
+  if(!blk || blk.dataset.imgidx === undefined) return;
+  const im = state.images && state.images[+blk.dataset.imgidx];
+  if(!im || !im.src) return;
+  e.preventDefault();
+  imgDrag = {
+    im, blk, x:e.clientX, y:e.clientY,
+    px: im.posX == null ? 50 : +im.posX, py: im.posY == null ? 50 : +im.posY,
+    w: blk.offsetWidth || 1, h: blk.offsetHeight || 1
+  };
+  if(blk.setPointerCapture) blk.setPointerCapture(e.pointerId);
+});
+card.addEventListener('pointermove', e=>{
+  if(!imgDrag) return;
+  const zf = preview.on ? preview.zoom : 1;
+  const dx = (e.clientX - imgDrag.x) / zf, dy = (e.clientY - imgDrag.y) / zf;
+  imgDrag.im.posX = Math.max(0, Math.min(100, imgDrag.px - dx / imgDrag.w * 130));
+  imgDrag.im.posY = Math.max(0, Math.min(100, imgDrag.py - dy / imgDrag.h * 130));
+  applyImgCrop(imgDrag.blk, imgDrag.im); /* light update only — a full render mid-drag would destroy the captured element */
+});
+function imgDragEnd(){
+  if(!imgDrag) return;
+  imgDrag = null;
+  render(); renderImageList(); commit(true);
+}
+card.addEventListener('pointerup', imgDragEnd);
+card.addEventListener('pointercancel', imgDragEnd);
+
+/* ---------- mobile settings tray ---------- */
+const trayHandle = document.getElementById('trayHandle');
+const mqMobile = window.matchMedia('(max-width:860px)');
+function setTray(open){
+  panel.classList.toggle('open', open);
+  trayHandle.setAttribute('aria-expanded', String(open));
+}
+let trayStartY = null, trayWasOpen = false, trayMoved = false;
+trayHandle.addEventListener('pointerdown', e=>{
+  if(!mqMobile.matches) return;
+  trayStartY = e.clientY;
+  trayWasOpen = panel.classList.contains('open');
+  trayMoved = false;
+  panel.style.transition = 'none';
+  if(trayHandle.setPointerCapture) trayHandle.setPointerCapture(e.pointerId);
+});
+trayHandle.addEventListener('pointermove', e=>{
+  if(trayStartY === null) return;
+  const dy = e.clientY - trayStartY;
+  if(Math.abs(dy) > 6) trayMoved = true;
+  const closedY = panel.offsetHeight - 48;
+  const y = Math.min(Math.max((trayWasOpen ? 0 : closedY) + dy, 0), closedY);
+  panel.style.transform = 'translateY(' + y + 'px)';
+});
+function trayRelease(e){
+  if(trayStartY === null) return;
+  const dy = e.clientY - trayStartY;
+  const closedY = panel.offsetHeight - 48;
+  panel.style.transition = '';
+  panel.style.transform = '';
+  if(!trayMoved){ setTray(!trayWasOpen); }
+  else{
+    const y = Math.min(Math.max((trayWasOpen ? 0 : closedY) + dy, 0), closedY);
+    setTray(y < closedY / 2);
+  }
+  trayStartY = null;
+}
+trayHandle.addEventListener('pointerup', trayRelease);
+trayHandle.addEventListener('pointercancel', trayRelease);
+trayHandle.addEventListener('keydown', e=>{
+  if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); setTray(!panel.classList.contains('open')); }
+});
+if(mqMobile.addEventListener) mqMobile.addEventListener('change', m=>{ if(!m.matches){ setTray(false); panel.style.transform = ''; exitPreview(); } });
+
+/* ---------- format preview: zoom out to Wide / Tablet on a phone ---------- */
+const boardEl = document.getElementById('board');
+const cardWrapEl = document.getElementById('cardWrap');
+const pvLabel = document.getElementById('pvLabel');
+const preview = { on:false, prevW:420, zoom:1 };
+function setPreviewZoom(z){
+  preview.zoom = Math.min(3, Math.max(0.15, z));
+  cardWrapEl.style.zoom = preview.zoom;
+}
+function fitPreview(){
+  setPreviewZoom((boardEl.clientWidth - 28) / state.cardW);
+}
+function enterPreview(w){
+  if(!preview.on) preview.prevW = state.cardW;
+  preview.on = true;
+  state.cardW = w;
+  pvLabel.textContent = (w >= 700 ? 'Tablet' : 'Wide') + ' preview';
+  document.body.classList.add('preview');
+  if(mqMobile.matches) setTray(false);
+  syncControls(); render();
+  requestAnimationFrame(fitPreview);
+}
+function exitPreview(){
+  if(!preview.on) return;
+  preview.on = false;
+  state.cardW = preview.prevW || 420;
+  document.body.classList.remove('preview');
+  cardWrapEl.style.zoom = '';
+  syncControls(); render();
+}
+document.getElementById('pvIn').onclick  = ()=>setPreviewZoom(preview.zoom * 1.25);
+document.getElementById('pvOut').onclick = ()=>setPreviewZoom(preview.zoom / 1.25);
+document.getElementById('pvFit').onclick = fitPreview;
+document.getElementById('pvExit').onclick = exitPreview;
+window.addEventListener('resize', ()=>{ if(preview.on) fitPreview(); });
+
+/* ---------- rich text editor for body copy ---------- */
+const rtModal = document.getElementById('rtModal');
+const rtArea = document.getElementById('rtArea');
+const RT_ALLOWED = {P:1, DIV:1, BR:1, B:1, STRONG:1, I:1, EM:1, U:1, UL:1, OL:1, LI:1, SPAN:1, A:1};
+function sanitizeRich(html){
+  const tpl = document.createElement('template');
+  tpl.innerHTML = html;
+  (function walk(node){
+    [...node.children].forEach(el=>{
+      if(el.tagName === 'SCRIPT' || el.tagName === 'STYLE'){ el.remove(); return; }
+      walk(el);
+      if(!RT_ALLOWED[el.tagName]){ el.replaceWith(...el.childNodes); return; }
+      [...el.attributes].forEach(a=>{
+        const keep = el.tagName === 'A' && a.name === 'href' && /^https?:/i.test(el.getAttribute('href') || '');
+        if(!keep) el.removeAttribute(a.name);
+      });
+    });
+  })(tpl.content);
+  return tpl.innerHTML;
+}
+function openRtModal(){
+  rtArea.innerHTML = (state.bodyRich && state.bodyHtml)
+    ? state.bodyHtml
+    : state.bodyText.split(/\n+/).map(t=>t.trim()).filter(Boolean).map(t=>`<p>${esc(t)}</p>`).join('') || '<p></p>';
+  rtModal.classList.add('show');
+  rtArea.focus();
+}
+function closeRtModal(){ rtModal.classList.remove('show'); }
+document.getElementById('rtOpen').onclick = openRtModal;
+document.getElementById('rtCancel').onclick = closeRtModal;
+rtModal.addEventListener('click', e=>{ if(e.target === rtModal) closeRtModal(); });
+document.querySelectorAll('.rt-bar button').forEach(b=>{
+  b.addEventListener('mousedown', e=>e.preventDefault()); /* keep the text selection */
+  b.onclick = ()=>{ document.execCommand(b.dataset.cmd, false, null); rtArea.focus(); };
+});
+document.getElementById('rtDone').onclick = ()=>{
+  state.bodyHtml = sanitizeRich(rtArea.innerHTML);
+  state.bodyRich = true;
+  state.show.body = true;
+  closeRtModal();
+  syncControls(); render(); commit(true);
+  toast('Rich text applied to body copy.');
+};
+
+applyTheme('network');
+histPast = []; histFuture = []; histLast = histSnap(); updateHistBtns();
+refreshQuickSave();
+</script>
+</body>
+</html>
